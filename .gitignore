@@ -1,0 +1,5 @@
+# Sublime Text 2
+*.sublime-workspace
+
+# Visual Studio
+*.suo

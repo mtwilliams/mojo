@@ -1,0 +1,117 @@
+namespace Mojo
+{
+    #ifdef DELEGATE_TARGS
+        template <typename R, DELEGATE_TARGS>
+    #else
+        template <typename R>
+    #endif
+
+    class MOJO_CLASS_EXPORT(DELEGATE_NAME)
+    {
+        public: /* external */
+            DELEGATE_NAME() : _instance_ptr(NULL) , _stub_func(NULL) {}
+            DELEGATE_NAME( const DELEGATE_NAME& other ) : _instance_ptr(other._instance_ptr) , _stub_func(other._stub_func) {}
+            ~DELEGATE_NAME() { _instance_ptr = NULL; _stub_func = NULL; }
+            DELEGATE_NAME& operator=( const DELEGATE_NAME& other ) { _instance_ptr = other._instance_ptr; _stub_func = other._stub_func; return *this; }
+
+            #ifdef DELEGATE_FARGS
+                R operator() ( DELEGATE_FARGS ) {
+                    mojo_assertf(_stub_func, "Tried to call delegate without stub.\n");
+                    return _stub_func(_instance_ptr, DELEGATE_CARGS);
+                }
+            #else
+                R operator() ( void ) {
+                    mojo_assertf(_stub_func, "Tried to call delegate without stub.\n");
+                    return _stub_func(_instance_ptr);
+                }
+            #endif
+
+            ////////////////////////////////////////////////////////////////////////////////
+            // DELEGATE_NAME::FromFunction                                                //
+            ////////////////////////////////////////////////////////////////////////////////
+
+            #ifdef DELEGATE_FARGS
+                template <R (*Func)( DELEGATE_FARGS )>
+            #else
+                template <R (*Func)()>
+            #endif
+
+            #ifdef DELEGATE_SARGS
+                static DELEGATE_NAME<R, DELEGATE_SARGS> FromFunction( void ) {
+                    DELEGATE_NAME<R, DELEGATE_SARGS> d;
+                    d._instance_ptr = NULL;
+                    d._stub_func    = &FuncStub<Func>;
+                    return d;
+                }
+            #else
+                static DELEGATE_NAME<R> FromFunction( void ) {
+                    DELEGATE_NAME<R> d;
+                    d._instance_ptr = NULL;
+                    d._stub_func    = &FuncStub<Func>;
+                    return d;
+                }
+            #endif
+
+            ////////////////////////////////////////////////////////////////////////////////
+            // DELEGATE_NAME::FromMember                                                  //
+            ////////////////////////////////////////////////////////////////////////////////
+
+            #ifdef DELEGATE_FARGS
+                template <typename C, R (C::*MemberFunc)( DELEGATE_FARGS )>
+            #else
+                template <typename C, R (C::*MemberFunc)()>
+            #endif
+
+            #ifdef DELEGATE_SARGS
+                static DELEGATE_NAME<R, DELEGATE_SARGS> from_member( C* instance_ptr ) {
+                    DELEGATE_NAME<R, DELEGATE_SARGS> delegate;
+                    delegate._instance_ptr = instance_ptr;
+                    delegate._stub_func    = &MemberStub<C, MemberFunc>;
+                    return delegate;
+                }
+            #else
+                static DELEGATE_NAME<R> from_member( C* instance_ptr ) {
+                    DELEGATE_NAME<R> delegate;
+                    delegate._instance_ptr = instance_ptr;
+                    delegate._stub_func    = &MemberStub<C, MemberFunc>;
+                    return delegate;
+                }
+            #endif
+
+        private: /* internal */
+            #ifdef DELEGATE_FARGS
+                template <R (*Func)( DELEGATE_FARGS )>
+                static R FuncStub( void*, DELEGATE_FARGS ) {
+                    return (*Func)( DELEGATE_CARGS );
+                }
+            #else
+                template <R (*Func)()>
+                static R FuncStub( void* ) {
+                    return (*Func)();
+                }
+            #endif
+
+            #ifdef DELEGATE_FARGS
+                template <typename C, R (C::*MemberFunc)( DELEGATE_FARGS ) >
+                static R MemberStub( void* instance_ptr, DELEGATE_FARGS ) {
+                    C* class_ptr =((C*)instance_ptr);
+                    return (class_ptr->*MemberFunc)( DELEGATE_CARGS );
+                }
+            #else
+                template <typename C, R (C::*MemberFunc)() >
+                static R MemberStub( void* instance_ptr ) {
+                    C* class_ptr =((C*)instance_ptr);
+                    return (class_ptr->*MemberFunc)();
+                }
+            #endif
+
+        private: /* internal */
+            void* _instance_ptr;
+
+            #ifdef DELEGATE_FARGS
+                R (*_stub_func)( void*, DELEGATE_FARGS );
+            #else
+                R (*_stub_func)( void* );
+            #endif
+    };
+}
