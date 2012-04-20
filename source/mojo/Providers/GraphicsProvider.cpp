@@ -30,6 +30,9 @@ namespace Providers
                 : _initialized(false)
                 , _num_window_closed_callbacks(0)
                 , _num_window_resized_callbacks(0)
+                , _model_matrix(Mojo::Matrix4f::identity)
+                , _view_matrix(Mojo::Matrix4f::identity)
+                , _projection_matrix(Mojo::Matrix4f::identity)
             {
             }
 
@@ -68,6 +71,8 @@ namespace Providers
                 //glfwSetMouseWheelCallback(&MouseWheelCallback);
                 glfwSwapInterval(settings.vsync ? 1 : 0);
 
+                glViewport(0, 0, settings.width, settings.height);
+
                 return true;
             }
 
@@ -76,6 +81,20 @@ namespace Providers
                 if( !_initialized ) return;
                 _initialized = false;
                 glfwTerminate();
+            }
+
+            uint32_t Width()
+            {
+                int width, height;
+                glfwGetWindowSize(&width, &height);
+                return (uint32_t)width;
+            }
+
+            uint32_t Height()
+            {
+                int width, height;
+                glfwGetWindowSize(&width, &height);
+                return (uint32_t)height;
             }
 
             void Clear( uint32_t clear_targets, float r, float g, float b, float a, float depth = 1.0f, uint32_t stencil = 0, uint32_t buffer = 0 )
@@ -110,6 +129,88 @@ namespace Providers
             {
                 // todo: dispatch input MessageQueues
                 glfwSwapBuffers();
+            }
+
+            void SetMatrix( const Mojo::Graphics::MatrixType matrix_type, const Mojo::Matrix4f& matrix )
+            {
+                using namespace Mojo::Graphics;
+
+                switch( matrix_type ) {
+                    case MATRIX_MODEL:      _model_matrix = matrix; glMatrixMode(GL_MODELVIEW); glLoadTransposeMatrixf((const float*)(_view_matrix * _model_matrix)); break;
+                    case MATRIX_VIEW:       _view_matrix = matrix;  glMatrixMode(GL_MODELVIEW); glLoadTransposeMatrixf((const float*)(_view_matrix * _model_matrix)); break;
+                    case MATRIX_PROJECTION: _projection_matrix = matrix; glMatrixMode(GL_PROJECTION); glLoadTransposeMatrixf((const float*)(_projection_matrix)); break;
+                }
+            }
+
+            void Enable( const Mojo::Graphics::ArrayType array_type )
+            {
+                using namespace Mojo::Graphics;
+
+                GLenum cap;
+                switch( array_type ) {
+                    case VERTEX_ARRAY:    cap = GL_VERTEX_ARRAY; break;
+                    case INDEX_ARRAY:     cap = GL_INDEX_ARRAY; break;
+                    case COLOR_ARRAY:     cap = GL_COLOR_ARRAY; break;
+                    case TEX_COORD_ARRAY: cap = GL_TEXTURE_COORD_ARRAY; break;
+                }
+
+                glEnableClientState(cap);
+            }
+
+            void Disable( const Mojo::Graphics::ArrayType array_type )
+            {
+                using namespace Mojo::Graphics;
+
+                GLenum cap;
+                switch( array_type ) {
+                    case VERTEX_ARRAY:    cap = GL_VERTEX_ARRAY; break;
+                    case INDEX_ARRAY:     cap = GL_INDEX_ARRAY; break;
+                    case COLOR_ARRAY:     cap = GL_COLOR_ARRAY; break;
+                    case TEX_COORD_ARRAY: cap = GL_TEXTURE_COORD_ARRAY; break;
+                }
+
+                glDisableClientState(cap);
+            }
+
+            void SetInterleavedArrays( const Mojo::Graphics::VertexFormat vertex_format, size_t stride, const void* data )
+            {
+                using namespace Mojo::Graphics;
+
+                GLenum glformat;
+                switch( vertex_format ) {
+                    case VT_V2F:             glformat = GL_V2F; break;
+                    case VT_V3F:             glformat = GL_V3F; break;
+                    case VT_C4UB_V2F:        glformat = GL_C4UB_V2F; break;
+                    case VT_C4UB_V3F:        glformat = GL_C4UB_V3F; break;
+                    case VT_C3F_V3F:         glformat = GL_C3F_V3F; break;
+                    case VT_N3F_V3F:         glformat = GL_N3F_V3F; break;
+                    case VT_C4F_N3F_V3F:     glformat = GL_C4F_N3F_V3F; break;
+                    case VT_T2F_V3F:         glformat = GL_T2F_V3F; break;
+                    case VT_T4F_V4F:         glformat = GL_T4F_V4F; break;
+                    case VT_T2F_C4UB_V3F:    glformat = GL_T2F_C4UB_V3F; break;
+                    case VT_T2F_C3F_V3F:     glformat = GL_T2F_C3F_V3F; break;
+                    case VT_T2F_N3F_V3F:     glformat = GL_T2F_N3F_V3F; break;
+                    case VT_T2F_C4F_N3F_V3F: glformat = GL_T2F_C4F_N3F_V3F; break;
+                    case VT_T4F_C4F_N3F_V4F: glformat = GL_T4F_C4F_N3F_V4F; break;
+                }
+
+                glInterleavedArrays(glformat, stride, data);
+            }
+
+            void Draw( const Mojo::Graphics::PrimitiveTopology prim_topology, uint32_t first, size_t count )
+            {
+                using namespace Mojo::Graphics;
+
+                GLenum mode;
+                switch( prim_topology ) {
+                    case PRIMITIVE_TOPOLOGY_POINTLIST:     mode = GL_POINTS; break;
+                    case PRIMITIVE_TOPOLOGY_LINELIST:      mode = GL_LINES; break;
+                    case PRIMITIVE_TOPOLOGY_LINESTRIP:     mode = GL_LINE_STRIP; break;
+                    case PRIMITIVE_TOPOLOGY_TRIANGLELIST:  mode = GL_TRIANGLES; break;
+                    case PRIMITIVE_TOPOLOGY_TRIANGLESTRIP: mode = GL_TRIANGLE_STRIP; break;
+                }
+
+                glDrawArrays(mode, (GLint)first, (GLsizei)count);
             }
 
             void Reference( const Mojo::Graphics::Handle& handle )
@@ -158,6 +259,8 @@ namespace Providers
 
             uint32_t _num_window_resized_callbacks;
             Mojo::Graphics::WindowResizedCallback _window_resized_callbacks[max_num_callbacks];
+
+            Mojo::Matrix4f _model_matrix, _view_matrix, _projection_matrix;
     };
 }
 namespace Services
