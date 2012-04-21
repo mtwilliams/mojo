@@ -19,10 +19,12 @@ namespace Mojo
     MessageQueue::~MessageQueue()
     {
         delete[] _buffer;
+        _buffer = NULL;
     }
 
     void MessageQueue::Enqueue( const Mojo::Message* msg )
     {
+        if( !_buffer ) return;
         if( msg->size + _enqueue_pos > _size - 1 ) Mojo::DebugPrintf(DBG_WARNING, "MessageQueue::Enqueue\n -> overflow; tried to queue %hu, %hu\n", msg->type, msg->size);
         memcpy((void*)&_buffer[_enqueue_pos], (void*)msg, msg->size);
         _enqueue_pos += msg->size;
@@ -30,8 +32,9 @@ namespace Mojo
 
     const Mojo::Message* MessageQueue::Dequeue()
     {
+        if( !_buffer ) return NULL;
         if( _dequeue_pos == _enqueue_pos ) return NULL;
-        const Mojo::Message* msg = (const Mojo::Message*)_buffer[_dequeue_pos];
+        const Mojo::Message* msg = (const Mojo::Message*)&_buffer[_dequeue_pos];
         _dequeue_pos += msg->size;
         if( _dequeue_pos = _enqueue_pos ) _dequeue_pos = 0; _enqueue_pos = 0;
         return msg;

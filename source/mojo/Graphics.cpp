@@ -6,8 +6,9 @@ namespace Mojo
 {
 namespace Graphics
 {
-    Handle::Handle( unsigned type, unsigned id )
-        : type(type)
+    Handle::Handle( unsigned type, unsigned id, unsigned valid )
+        : valid(valid)
+        , type(type)
         , id(id)
     {
         Mojo::Services::Get<Mojo::Services::Graphics>()->Reference(*this);
@@ -17,5 +18,7 @@ namespace Graphics
     {
         Mojo::Services::Get<Mojo::Services::Graphics>()->Dereference(*this);
     }
+
+    Handle Handle::invalid = Handle(0, 0, 0);
 }
 }

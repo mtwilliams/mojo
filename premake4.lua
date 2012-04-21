@@ -31,16 +31,18 @@ solution "mojo"
 
         configuration "windows"
             defines { "GLFW_DLL" }
-            links { "opengl32", "GLFWDLL", "glew32" }
+            links { "opengl32", "GLFWDLL", "FreeImage" }
 
             includedirs {
                 "dependencies/glfw-2.7.3/include",
                 "dependencies/glew-1.7.0/include",
+                "dependencies/freeimage-3.15.2/include"
             }
 
             libdirs { 
                 "dependencies/glfw-2.7.3/lib-msvc100",
                 "dependencies/glew-1.7.0/lib-msvc100",
+                "dependencies/freeimage-3.15.2/lib-msvc100"
             }
 
             configuration { "debug", "windows" }

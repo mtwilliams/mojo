@@ -5,9 +5,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+static void OnExit()
+{
+    MOJO_GET_SERVICE(Graphics)->Destroy();
+}
+
 static void OnWindowClosed()
 {
     exit(EXIT_SUCCESS);
+}
+
+static void OnKeyPressed( Mojo::Input::Key key )
+{
+    using namespace Mojo::Input;
+    if( key == KEY_ESC ) {
+        exit(EXIT_SUCCESS);
+    }
 }
 
 int main( int argc, char** argv )
@@ -41,9 +54,13 @@ int main( int argc, char** argv )
 
     // Register callbacks
     MOJO_GRAPHICS_REGISTER_CALLBACK(OnWindowClosed, Mojo::Graphics::WindowClosedCallback::FromFunction<OnWindowClosed>());
+    MOJO_INPUT_REGISTER_CALLBACK(OnKeyPressed, Mojo::Input::KeyPressedCallback::FromFunction<OnKeyPressed>());
 
     // Push the default state
     Mojo::States::Push(new Mojo::States::Default());
+
+    // Register exit handler
+    atexit(&OnExit);
 
     while( true )
     {

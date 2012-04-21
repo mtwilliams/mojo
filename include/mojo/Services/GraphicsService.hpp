@@ -18,6 +18,11 @@ namespace Graphics
         CLEAR_STENCIL = (1 << 2),
     };
 
+    enum State {
+        BLEND      = 1,
+        DEPTH_TEST = 2,
+    };
+
     enum VertexFormat {
         VT_V2F             = 1,
         VT_V3F             = 2,
@@ -35,11 +40,26 @@ namespace Graphics
         VT_T4F_C4F_N3F_V4F = 14,
     };
 
-    enum ArrayType {
-        VERTEX_ARRAY    = 1,
-        INDEX_ARRAY     = 2,
-        COLOR_ARRAY     = 3,
-        TEX_COORD_ARRAY = 4,
+    enum BlendOp {
+        BLEND_OP_ADD          = 1,
+        BLEND_OP_SUBTRACT     = 2,
+        BLEND_OP_REV_SUBTRACT = 3,
+        BLEND_OP_MIN          = 4,
+        BLEND_OP_MAX          = 5,
+    };
+
+    enum BlendFunc {
+        BLEND_ZERO             = 1,
+        BLEND_ONE              = 2,
+        BLEND_SRC_COLOR        = 3,
+        BLEND_INV_SRC_COLOR    = 4,
+        BLEND_SRC_ALPHA        = 5,
+        BLEND_INV_SRC_ALPHA    = 6,
+        BLEND_DEST_ALPHA       = 7,
+        BLEND_INV_DEST_ALPHA   = 8,
+        BLEND_DEST_COLOR       = 9,
+        BLEND_INV_DEST_COLOR   = 10,
+        BLEND_SRC_ALPHA_SAT    = 11,
     };
 
     enum PrimitiveTopology {
@@ -49,6 +69,13 @@ namespace Graphics
         PRIMITIVE_TOPOLOGY_LINESTRIP     = 3,
         PRIMITIVE_TOPOLOGY_TRIANGLELIST  = 4,
         PRIMITIVE_TOPOLOGY_TRIANGLESTRIP = 5,
+    };
+
+    enum ArrayType {
+        VERTEX_ARRAY    = 1,
+        INDEX_ARRAY     = 2,
+        COLOR_ARRAY     = 3,
+        TEX_COORD_ARRAY = 4,
     };
 
     enum MatrixType {
@@ -89,8 +116,17 @@ namespace Services
 
             virtual void SetMatrix( const Mojo::Graphics::MatrixType matrix_type, const Mojo::Matrix4f& matrix ) = 0;
 
+            virtual void Enable( const Mojo::Graphics::State state ) = 0;
+            virtual void Disable( const Mojo::Graphics::State state ) = 0;
+
             virtual void Enable( const Mojo::Graphics::ArrayType array_type ) = 0;
             virtual void Disable( const Mojo::Graphics::ArrayType array_type ) = 0;
+
+            virtual void SetBlendOp( const Mojo::Graphics::BlendOp blend_op ) = 0;
+            virtual void SetBlendFunc( const Mojo::Graphics::BlendFunc src, const Mojo::Graphics::BlendFunc dest ) = 0;
+
+            virtual Mojo::Texture CreateTextureFromFile( const char* path, bool mipmap ) = 0;
+            virtual void SetTexture( const Mojo::Texture& texture_handle ) = 0;
 
             virtual void SetInterleavedArrays( const Mojo::Graphics::VertexFormat vertex_format, size_t stride, const void* data ) = 0;
             virtual void Draw( const Mojo::Graphics::PrimitiveTopology prim_topology, uint32_t first, size_t count ) = 0;

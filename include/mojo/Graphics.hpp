@@ -8,11 +8,20 @@ namespace Mojo
 namespace Graphics
 {
     struct MOJO_CLASS_EXPORT(Handle) {
-        unsigned type : 4;
-        unsigned id   : 12;
+        enum Type {
+            TEXTURE       = 1,
+            SHADER        = 2,
+            RENDER_TARGET = 3,
+        };
 
-        Handle( unsigned type, unsigned id );
+        unsigned valid : 1;
+        unsigned type  : 3;
+        unsigned id    : 12;
+
+        Handle( unsigned type, unsigned id, unsigned valid = 1 );
         ~Handle();
+
+        static Handle invalid;
     };
 }
     typedef Mojo::Graphics::Handle Texture, Shader, RenderTarget;

@@ -2,6 +2,7 @@
 #define MOJO_STATES_DEFAULT_HPP
 
 #include <Mojo/State.hpp>
+#include <Mojo/Graphics.hpp>
 
 namespace Mojo
 {
@@ -15,6 +16,9 @@ namespace States
 
             void Update( const Mojo::Timestep timestep );
             void Draw();
+
+        private:
+            Mojo::Texture _cube_wireframe;
     };
 }
 }

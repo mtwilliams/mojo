@@ -1,7 +1,13 @@
 #include <Mojo/Services.hpp>
 
 #include <Mojo/Debug.hpp>
+#include <Mojo/Messages.hpp>
 #include <Mojo/Platform/GL.h>
+
+// todo: remove/replace stl
+#include <map>
+
+#include <FreeImage.h>
 
 namespace Mojo
 {
@@ -25,14 +31,52 @@ namespace Providers
                 for( uint32_t i = 0; i < graphics_provider->_num_window_resized_callbacks; ++i ) graphics_provider->_window_resized_callbacks[i]((uint32_t)width, (uint32_t)height);
             }
 
+            static void GLFWCALL KeyCallback( int key, int action ) {
+                Mojo::Providers::Graphics* graphics_provider = (Mojo::Providers::Graphics*)MOJO_GET_SERVICE(Graphics);
+
+                if( action == GLFW_PRESS ) {
+                    Mojo::Messages::KeyPressed msg;
+                    msg.key = key;
+                    graphics_provider->_input_messages.Enqueue(&msg);
+                } else {
+                    Mojo::Messages::KeyReleased msg;
+                    msg.key = key;
+                    graphics_provider->_input_messages.Enqueue(&msg);
+                }
+            }
+
+            static void GLFWCALL CharCallback( int key, int action ) {
+                Mojo::Providers::Graphics* graphics_provider = (Mojo::Providers::Graphics*)MOJO_GET_SERVICE(Graphics);
+            }
+
+            static void GLFWCALL MouseBtnCallback( int button, int action ) {
+                Mojo::Providers::Graphics* graphics_provider = (Mojo::Providers::Graphics*)MOJO_GET_SERVICE(Graphics);
+
+                if( action == GLFW_PRESS ) {
+                    // Mojo::Messages::MouseBtnPressed msg;
+                } else {
+                    // Mojo::Messages::MouseBtnReleased msg;
+                }
+            }
+
+            static void GLFWCALL MousePosCallback( int x, int y ) {
+                Mojo::Providers::Graphics* graphics_provider = (Mojo::Providers::Graphics*)MOJO_GET_SERVICE(Graphics);
+            }
+
+            static void GLFWCALL MouseWheelCallback( int wheel ) {
+                Mojo::Providers::Graphics* graphics_provider = (Mojo::Providers::Graphics*)MOJO_GET_SERVICE(Graphics);
+            }
+
         public:
             Graphics()
                 : _initialized(false)
+                , _input_messages(1024)
                 , _num_window_closed_callbacks(0)
                 , _num_window_resized_callbacks(0)
                 , _model_matrix(Mojo::Matrix4f::identity)
                 , _view_matrix(Mojo::Matrix4f::identity)
                 , _projection_matrix(Mojo::Matrix4f::identity)
+                , _next_texture_id(1)
             {
             }
 
@@ -64,15 +108,20 @@ namespace Providers
                 glfwSetWindowTitle(settings.title);
                 glfwSetWindowCloseCallback(&WindowCloseCallback);
                 glfwSetWindowSizeCallback(&WindowSizeCallback);
-                //glfwSetKeyCallback(&KeyCallback);
-                //glfwSetCharCallback(&CharCallback);
-                //glfwSetMouseButtonCallback(&MouseBtnCallback);
-                //glfwSetMousePosCallback(&MousePosCallback);
-                //glfwSetMouseWheelCallback(&MouseWheelCallback);
+                glfwSetKeyCallback(&KeyCallback);
+                glfwSetCharCallback(&CharCallback);
+                glfwSetMouseButtonCallback(&MouseBtnCallback);
+                glfwSetMousePosCallback(&MousePosCallback);
+                glfwSetMouseWheelCallback(&MouseWheelCallback);
                 glfwSwapInterval(settings.vsync ? 1 : 0);
 
-                glViewport(0, 0, settings.width, settings.height);
+                glEnable(GL_BLEND);
+                glEnable(GL_DEPTH_TEST);
 
+                glViewport(0, 0, settings.width, settings.height);
+                
+
+                _initialized = true;
                 return true;
             }
 
@@ -127,8 +176,9 @@ namespace Providers
 
             void SwapBuffers()
             {
-                // todo: dispatch input MessageQueues
                 glfwSwapBuffers();
+
+                MOJO_GET_SERVICE(Input)->ProcessMessageBuffer(&_input_messages);
             }
 
             void SetMatrix( const Mojo::Graphics::MatrixType matrix_type, const Mojo::Matrix4f& matrix )
@@ -140,6 +190,32 @@ namespace Providers
                     case MATRIX_VIEW:       _view_matrix = matrix;  glMatrixMode(GL_MODELVIEW); glLoadTransposeMatrixf((const float*)(_view_matrix * _model_matrix)); break;
                     case MATRIX_PROJECTION: _projection_matrix = matrix; glMatrixMode(GL_PROJECTION); glLoadTransposeMatrixf((const float*)(_projection_matrix)); break;
                 }
+            }
+
+            void Enable( const Mojo::Graphics::State state )
+            {
+                using namespace Mojo::Graphics;
+
+                GLenum cap;
+                switch( state ) {
+                    case BLEND: cap = GL_BLEND; break;
+                    case DEPTH_TEST: cap = GL_DEPTH_TEST; break;
+                }
+
+                glEnable(cap);
+            }
+
+            void Disable( const Mojo::Graphics::State state )
+            {
+                using namespace Mojo::Graphics;
+
+                GLenum cap;
+                switch( state ) {
+                    case BLEND: cap = GL_BLEND; break;
+                    case DEPTH_TEST: cap = GL_DEPTH_TEST; break;
+                }
+
+                glDisable(cap);
             }
 
             void Enable( const Mojo::Graphics::ArrayType array_type )
@@ -170,6 +246,124 @@ namespace Providers
                 }
 
                 glDisableClientState(cap);
+            }
+
+            void SetBlendOp( const Mojo::Graphics::BlendOp blend_op )
+            {
+                using namespace Mojo::Graphics;
+
+                GLenum mode;
+                switch( blend_op ) {
+                    case BLEND_OP_ADD: mode = GL_FUNC_ADD; break;
+                    case BLEND_OP_SUBTRACT: mode = GL_FUNC_SUBTRACT; break;
+                    case BLEND_OP_REV_SUBTRACT: mode = GL_FUNC_REVERSE_SUBTRACT; break;
+                    case BLEND_OP_MIN: mode = GL_MIN; break;
+                    case BLEND_OP_MAX: mode = GL_MAX; break;
+                }
+
+                glBlendEquation(mode);
+            }
+
+            void SetBlendFunc( const Mojo::Graphics::BlendFunc src, const Mojo::Graphics::BlendFunc dest )
+            {
+                using namespace Mojo::Graphics;
+
+                GLenum sfactor, dfactor;
+                switch( src ) {
+                    case BLEND_ZERO:             sfactor = GL_ZERO; break;
+                    case BLEND_ONE:              sfactor = GL_ONE; break;
+                    case BLEND_SRC_COLOR:        sfactor = GL_SRC_COLOR; break;
+                    case BLEND_INV_SRC_COLOR:    sfactor = GL_ONE_MINUS_SRC_COLOR; break;
+                    case BLEND_SRC_ALPHA:        sfactor = GL_SRC_ALPHA; break;
+                    case BLEND_INV_SRC_ALPHA:    sfactor = GL_ONE_MINUS_SRC_ALPHA; break;
+                    case BLEND_DEST_ALPHA:       sfactor = GL_DST_ALPHA; break;
+                    case BLEND_INV_DEST_ALPHA:   sfactor = GL_ONE_MINUS_DST_ALPHA; break;
+                    case BLEND_DEST_COLOR:       sfactor = GL_DST_COLOR; break;
+                    case BLEND_INV_DEST_COLOR:   sfactor = GL_ONE_MINUS_DST_COLOR; break;
+                    case BLEND_SRC_ALPHA_SAT:    sfactor = GL_SRC_ALPHA_SATURATE; break;
+                }
+
+                switch( dest ) {
+                    case BLEND_ZERO:             dfactor = GL_ZERO; break;
+                    case BLEND_ONE:              dfactor = GL_ONE; break;
+                    case BLEND_SRC_COLOR:        dfactor = GL_SRC_COLOR; break;
+                    case BLEND_INV_SRC_COLOR:    dfactor = GL_ONE_MINUS_SRC_COLOR; break;
+                    case BLEND_SRC_ALPHA:        dfactor = GL_SRC_ALPHA; break;
+                    case BLEND_INV_SRC_ALPHA:    dfactor = GL_ONE_MINUS_SRC_ALPHA; break;
+                    case BLEND_DEST_ALPHA:       dfactor = GL_DST_ALPHA; break;
+                    case BLEND_INV_DEST_ALPHA:   dfactor = GL_ONE_MINUS_DST_ALPHA; break;
+                    case BLEND_DEST_COLOR:       dfactor = GL_DST_COLOR; break;
+                    case BLEND_INV_DEST_COLOR:   dfactor = GL_ONE_MINUS_DST_COLOR; break;
+                    case BLEND_SRC_ALPHA_SAT:    dfactor = GL_SRC_ALPHA_SATURATE; break;
+                }
+
+                glBlendFunc(sfactor, dfactor);
+            }
+
+            Mojo::Texture CreateTextureFromFile( const char* path, bool mipmap )
+            {
+                FREE_IMAGE_FORMAT format = FreeImage_GetFileType(path, 0);
+                if( !format ) return Mojo::Texture::invalid;
+    
+                FIBITMAP* dib = FreeImage_Load(format, path);
+                if( !dib ) return Mojo::Texture::invalid;
+
+                FIBITMAP* dib32 = FreeImage_ConvertTo32Bits(dib);
+                if( !dib32 ) {
+                    FreeImage_Unload(dib);
+                    return Mojo::Texture::invalid;
+                }
+
+                FreeImage_Unload(dib);
+
+                Mojo::Providers::Graphics::Texture texture;
+                texture.type     = Mojo::Providers::Graphics::Texture::TEXUTRE_2D;
+                texture.num_refs = 1;
+                texture.width    = FreeImage_GetWidth(dib32);
+                texture.height   = FreeImage_GetHeight(dib32);
+                texture.depth    = 1;
+
+                uint8_t* converted = new uint8_t[texture.width * texture.height * 4];
+                uint8_t* pixels    = (unsigned char*)FreeImage_GetBits(dib32);
+
+                for( uint32_t i = 0; i < texture.width * texture.height; ++i ) {
+                    converted[i * 4 + 0] = pixels[i * 4 + 2];
+                    converted[i * 4 + 1] = pixels[i * 4 + 1];
+                    converted[i * 4 + 2] = pixels[i * 4 + 0];
+                    converted[i * 4 + 3] = pixels[i * 4 + 3];
+                }
+
+                glGenTextures(1, (GLuint*)&texture.id);
+                glBindTexture(GL_TEXTURE_2D, texture.id);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mipmap ? GL_LINEAR : GL_NEAREST);
+                glTexImage2D(GL_TEXTURE_2D, 0, 4, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, converted);
+
+                FreeImage_Unload(dib32);
+                delete[] converted;
+
+                if( mipmap ) {
+                    glEnable(GL_TEXTURE_2D);
+                    glGenerateMipmap(GL_TEXTURE_2D);
+                }
+
+                const uint32_t id = _next_texture_id++;
+                _textures.insert(std::make_pair(id, texture));
+                return Mojo::Texture(Mojo::Graphics::Handle::TEXTURE, id);
+            }
+
+            void SetTexture( const Mojo::Texture& texture_handle )
+            {
+                if( !texture_handle.valid ) { 
+                    glDisable(GL_TEXTURE_2D);
+                    return;
+                }
+                
+                std::map<uint32_t, Mojo::Providers::Graphics::Texture>::const_iterator iter = _textures.find(texture_handle.id);
+                if( iter == _textures.end() ) return;
+                
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, iter->second.id);
             }
 
             void SetInterleavedArrays( const Mojo::Graphics::VertexFormat vertex_format, size_t stride, const void* data )
@@ -215,10 +409,25 @@ namespace Providers
 
             void Reference( const Mojo::Graphics::Handle& handle )
             {
+                if( !handle.valid ) return;
+                if( handle.type == Mojo::Graphics::Handle::TEXTURE ) {
+                    std::map<uint32_t, Mojo::Providers::Graphics::Texture>::iterator iter = _textures.find(handle.id);
+                    if( iter == _textures.end() ) return;
+                    iter->second.num_refs++;
+                }
             }
 
             void Dereference( const Mojo::Graphics::Handle& handle )
             {
+                if( !handle.valid ) return;
+                if( handle.type == Mojo::Graphics::Handle::TEXTURE ) {
+                    std::map<uint32_t, Mojo::Providers::Graphics::Texture>::iterator iter = _textures.find(handle.id);
+                    if( iter == _textures.end() ) return;
+                    iter->second.num_refs--;
+                    if( iter->second.num_refs != 0 ) return;
+                    glDeleteTextures(1, &iter->second.id);
+                    _textures.erase(iter);
+                }
             }
 
             uint32_t Register_OnWindowClosed( const Mojo::Graphics::WindowClosedCallback& callback )
@@ -254,6 +463,8 @@ namespace Providers
         private:
             bool _initialized;
 
+            Mojo::MessageQueue _input_messages;
+
             uint32_t _num_window_closed_callbacks;
             Mojo::Graphics::WindowClosedCallback _window_closed_callbacks[max_num_callbacks];
 
@@ -261,6 +472,26 @@ namespace Providers
             Mojo::Graphics::WindowResizedCallback _window_resized_callbacks[max_num_callbacks];
 
             Mojo::Matrix4f _model_matrix, _view_matrix, _projection_matrix;
+
+        private:
+            struct Resource {
+                uint32_t num_refs;
+            };
+
+            struct Texture : public Resource {
+                enum Type {
+                    TEXTURE_1D       = 1,
+                    TEXTURE_1D_ARRAY = 2,
+                    TEXUTRE_2D       = 3,
+                };
+
+                Type type;
+                uint32_t width, height, depth;
+                GLuint id;
+            };
+
+            uint32_t _next_texture_id;
+            std::map<uint32_t, Texture> _textures;
     };
 }
 namespace Services
