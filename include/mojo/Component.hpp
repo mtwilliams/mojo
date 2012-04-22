@@ -3,6 +3,9 @@
 
 #include <Mojo/Core.hpp>
 
+#define MOJO_COMPONENT_IS_A( capability ) Mojo::Component::##capability##_FLAG
+#define MOJO_COMPONENT_IS( component, capability ) component->GetFlag(Mojo::Component::##capability##_FLAG)
+
 namespace Mojo
 {
     struct MOJO_CLASS_EXPORT(Component) : public Mojo::NonCopyable
@@ -16,7 +19,7 @@ namespace Mojo
                 AUDIO_EMITTER_COMPONENT       = AUDIO_BASE_COMPONENT + 1,
 
                 GRAPHICS_BASE_COMPONENT       = 300,
-                RENDERABLE_COMPONENT          = GRAPHICS_BASE_COMPONENT + 1,
+                SPRITE_COMPONENT              = GRAPHICS_BASE_COMPONENT + 1,
 
                 PHYSICS_BASE_COMPONENT        = 400,
                 PHYS_BODY_COMPONENT           = PHYSICS_BASE_COMPONENT + 1,
@@ -24,9 +27,15 @@ namespace Mojo
                 USER_BASE_COMPONENT           = 1000,
             };
 
+            enum Flags {
+                Updateable_FLAG = (1 << 0),
+                Drawable_FLAG   = (1 << 1),
+            };
+
         public:
-            Component( const Mojo::Component::Type type )
+            Component( const Mojo::Component::Type type, const uint32_t flags )
                 : _type(type)
+                , _flags(flags)
             {
             }
 
@@ -35,10 +44,26 @@ namespace Mojo
             }
 
         public:
-            inline Mojo::Component::Type GetType() const { return _type; }
+            inline Mojo::Component::Type GetType() const { return (Mojo::Component::Type)_type; }
+            inline bool GetFlag( const uint32_t flag ) const { return (_flags & flag) == flag; }
 
         private:
-            const Mojo::Component::Type _type;
+            const unsigned _flags : 8;
+            const unsigned _type  : 24;
+    };
+
+    class MOJO_CLASS_EXPORT(UpdateableComponent)
+    {
+        public:
+            virtual ~UpdateableComponent();
+            virtual void Update( const Mojo::Timestep timestep ) = 0;
+    };
+
+    class MOJO_CLASS_EXPORT(DrawableComponent)
+    {
+        public:
+            virtual ~DrawableComponent();
+            virtual void Draw() = 0;
     };
 }
 

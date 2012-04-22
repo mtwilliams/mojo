@@ -1,5 +1,8 @@
 #include <Mojo/States/DefaultState.hpp>
 
+#include <Mojo/Sprite.hpp>
+#include <Mojo/SpriteBatch.hpp>
+
 #include <Mojo/Debug.hpp>
 #include <Mojo/Services.hpp>
 
@@ -7,6 +10,11 @@ namespace Mojo
 {
 namespace States
 {
+    static float cucco_rot = 0.0f;
+    static float cucco_rot_speed = 36.0f;
+    static float cucco_radius = 128;
+    static Mojo::Vector2f cucco_pos = Mojo::Vector2f(400, 300);
+
     Default::Default()
         : _cube_wireframe(MOJO_GET_SERVICE(Graphics)->CreateTextureFromFile("data/textures/cube_wireframe.png", true))
     {
@@ -19,6 +27,13 @@ namespace States
     void Default::Update( const Mojo::Timestep timestep )
     {
         //Mojo::DebugPrintf(DBG_WARNING, "Default::Update\n");
+
+        cucco_rot += cucco_rot_speed * timestep;
+        if( cucco_rot >= 360.0f ) cucco_rot -= 360.0f;
+
+        const float r_cucco_rot = Mojo::DegressToRadians(cucco_rot);
+
+        cucco_pos = Mojo::Vector2f(400.0f + cos(r_cucco_rot) * cucco_radius, 300.0f + sin(r_cucco_rot) * cucco_radius);
     }
 
     void Default::Draw()
@@ -26,7 +41,7 @@ namespace States
         //Mojo::DebugPrintf(DBG_WARNING, "Default::Draw\n");
 
         static Mojo::Services::Graphics* graphics_service = MOJO_GET_SERVICE(Graphics);
-        graphics_service->Clear(Mojo::Graphics::CLEAR_COLOR | Mojo::Graphics::CLEAR_DEPTH, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f);
+        graphics_service->Clear(Mojo::Graphics::CLEAR_COLOR | Mojo::Graphics::CLEAR_DEPTH, Mojo::Colors::Gray, 1.0f);
 
         static const Mojo::Matrix4f model_matrix      = Mojo::Matrix4f::identity;
         static const Mojo::Matrix4f view_matrix       = Mojo::Matrix4f::identity;
@@ -36,29 +51,17 @@ namespace States
         graphics_service->SetMatrix(Mojo::Graphics::MATRIX_VIEW, view_matrix);
         graphics_service->SetMatrix(Mojo::Graphics::MATRIX_PROJECTION, projection_matrix);
 
-        struct Vertex {
-            float s, t;
-            uint8_t r, g, b, a;
-            float x, y, z;
+        static Mojo::Texture sprite_sheet = graphics_service->CreateTextureFromFile("data/textures/sheet.png", false);
+        static const Mojo::Sprite::Frame cucco_frames[] = {
+            { 0, 0, 16, 16 }
         };
 
-        static const Vertex vertices[] = {
-            { 1.0f, 1.0f, 255, 255, 255, 128, graphics_service->Width(), graphics_service->Height() / 2, 0.5f }, // top right
-            { 1.0f, 0.0f, 255, 255, 255, 128, graphics_service->Width(), graphics_service->Height(), 0.5f }, // bottom right
-            { 0.0f, 0.0f, 255, 255, 255, 128, graphics_service->Width() / 2, graphics_service->Height(), 0.5f }, // bottom left
+        static Mojo::Sprite cucco = Mojo::Sprite(1, &cucco_frames[0]);
+        static Mojo::SpriteBatch sprite_batch = Mojo::SpriteBatch(1);
 
-            { 1.0f, 1.0f, 255, 0, 0, 128, graphics_service->Width(), 0.0f, 0.0f },                       // top right
-            { 1.0f, 0.0f, 0, 255, 0, 128, graphics_service->Width(), graphics_service->Height(), 0.0f }, // bottom right
-            { 0.0f, 0.0f, 0, 0, 255, 128, 0.0f, graphics_service->Height(), 0.0f },                      // bottom left
-        };
-
-        graphics_service->SetTexture(_cube_wireframe);
-        graphics_service->SetBlendFunc(Mojo::Graphics::BLEND_SRC_ALPHA, Mojo::Graphics::BLEND_INV_SRC_ALPHA);
-        graphics_service->Enable(Mojo::Graphics::VERTEX_ARRAY);
-        graphics_service->Enable(Mojo::Graphics::COLOR_ARRAY);
-        graphics_service->Enable(Mojo::Graphics::TEX_COORD_ARRAY);
-        graphics_service->SetInterleavedArrays(Mojo::Graphics::VT_T2F_C4UB_V3F, 0, (void*)&vertices[0]);
-        graphics_service->Draw(Mojo::Graphics::PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, 6);
+        sprite_batch.Begin(sprite_sheet);
+        sprite_batch.Draw(cucco, 0, cucco_pos, Mojo::Vector2f(4.0f, 4.0f));
+        sprite_batch.End();
     }
 }
 }

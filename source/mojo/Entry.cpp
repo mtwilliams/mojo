@@ -30,7 +30,7 @@ int main( int argc, char** argv )
     settings.width       = 800;
     settings.height      = 600;
     settings.num_samples = 0;
-    settings.vsync       = false;
+    settings.vsync       = true;
     settings.fullscreen  = false;
     settings.no_resize   = true;
 
@@ -62,14 +62,22 @@ int main( int argc, char** argv )
     // Register exit handler
     atexit(&OnExit);
 
+    
+    Mojo::HighResolutionClock::TimePoint last_time    = Mojo::HighResolutionClock::Now();
+    Mojo::HighResolutionClock::TimePoint current_time = Mojo::HighResolutionClock::Now();
+
     while( true )
     {
-        Mojo::State* state = Mojo::States::GetCurrentState();
+        Mojo::HighResolutionClock::Duration time_diff = current_time - last_time;
+        Mojo::Timestep timestep = time_diff.Miliseconds() / 1000.0f;
 
-        state->Update(1.0f);
+        Mojo::State* state = Mojo::States::GetCurrentState();
+        state->Update(timestep);
         state->Draw();
-        
         graphics_service->SwapBuffers();
+
+        last_time    = current_time;
+        current_time = Mojo::HighResolutionClock::Now();
     }
 
     return EXIT_SUCCESS;

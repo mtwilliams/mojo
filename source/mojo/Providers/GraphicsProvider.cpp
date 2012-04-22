@@ -117,9 +117,8 @@ namespace Providers
 
                 glEnable(GL_BLEND);
                 glEnable(GL_DEPTH_TEST);
-
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 glViewport(0, 0, settings.width, settings.height);
-                
 
                 _initialized = true;
                 return true;
@@ -146,7 +145,7 @@ namespace Providers
                 return (uint32_t)height;
             }
 
-            void Clear( uint32_t clear_targets, float r, float g, float b, float a, float depth = 1.0f, uint32_t stencil = 0, uint32_t buffer = 0 )
+            void Clear( uint32_t clear_targets, const Mojo::Color& color, float depth = 1.0f, uint32_t stencil = 0, uint32_t buffer = 0 )
             {
                 mojo_assertf(buffer == 0, "Not implemented.");
 
@@ -157,7 +156,7 @@ namespace Providers
                 uint32_t buffer_bits = 0;
 
                 if( clear_color ) {
-                    glClearColor(r, g, b, a);
+                    glClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
                     buffer_bits |= GL_COLOR_BUFFER_BIT;
                 }
 
@@ -302,6 +301,8 @@ namespace Providers
 
             Mojo::Texture CreateTextureFromFile( const char* path, bool mipmap )
             {
+                // todo: have this go through MOJO_GET_SERVICE(Filesystem)
+
                 FREE_IMAGE_FORMAT format = FreeImage_GetFileType(path, 0);
                 if( !format ) return Mojo::Texture::invalid;
     
@@ -352,8 +353,18 @@ namespace Providers
                 return Mojo::Texture(Mojo::Graphics::Handle::TEXTURE, id);
             }
 
+            void GetTextureDimensions( const Mojo::Texture& texture_handle, uint32_t& width, uint32_t& height, uint32_t& depth )
+            {
+                if( !texture_handle.valid ) { width = 0; height = 0; depth = 0; return; }
+                std::map<uint32_t, Mojo::Providers::Graphics::Texture>::const_iterator iter = _textures.find(texture_handle.id);
+                if( iter == _textures.end() ) { width = 0; height = 0; depth = 0; return; }
+                width = iter->second.width; height = iter->second.height; depth = iter->second.depth;
+            }
+
             void SetTexture( const Mojo::Texture& texture_handle )
             {
+                // todo: bind cache
+
                 if( !texture_handle.valid ) { 
                     glDisable(GL_TEXTURE_2D);
                     return;

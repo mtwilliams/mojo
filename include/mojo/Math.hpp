@@ -6,6 +6,7 @@
 #include <Mojo/Math/Vector3.hpp>
 #include <Mojo/Math/Vector4.hpp>
 #include <Mojo/Math/Matrix4.hpp>
+#include <Mojo/Math/Rectangle.hpp>
 
 namespace Mojo
 {
@@ -13,6 +14,7 @@ namespace Mojo
     typedef Mojo::Vector3<float> Vector3f;
     typedef Mojo::Vector4<float> Vector4f;
     typedef Mojo::Matrix4<float> Matrix4f;
+    typedef Mojo::Rect<float>    Rectf;
 }
 
 #endif /* MOJO_MATH_HPP */
