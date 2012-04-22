@@ -25,7 +25,7 @@ namespace Mojo
     {
         mojo_assertf(_num_vertices + num_vertices <= GetMaxNumVertices(), "Vertex overflow.\n");
         const size_t vert_size = Mojo::Graphics::GetVertexFormatSize(_vertex_format);
-        memcpy((void*)&_buffer[_num_vertices], (void*)vertices, num_vertices * vert_size);     
+        memcpy((void*)&_buffer[_num_vertices * vert_size], (void*)vertices, num_vertices * vert_size);     
         _num_vertices += num_vertices;
     }
 

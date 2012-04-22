@@ -10,10 +10,10 @@ namespace Mojo
 {
 namespace States
 {
-    static float cucco_rot = 0.0f;
-    static float cucco_rot_speed = 36.0f;
-    static float cucco_radius = 128;
-    static Mojo::Vector2f cucco_pos = Mojo::Vector2f(400, 300);
+    static float moon_rot = 0.0f;
+    static float moon_rot_speed = 36.0f;
+    static float moon_radius = 128;
+    static Mojo::Vector2f moon_pos = Mojo::Vector2f(400, 300);
 
     Default::Default()
         : _cube_wireframe(MOJO_GET_SERVICE(Graphics)->CreateTextureFromFile("data/textures/cube_wireframe.png", true))
@@ -28,12 +28,12 @@ namespace States
     {
         //Mojo::DebugPrintf(DBG_WARNING, "Default::Update\n");
 
-        cucco_rot += cucco_rot_speed * timestep;
-        if( cucco_rot >= 360.0f ) cucco_rot -= 360.0f;
+        moon_rot += moon_rot_speed * timestep;
+        if( moon_rot >= 360.0f ) moon_rot -= 360.0f;
 
-        const float r_cucco_rot = Mojo::DegressToRadians(cucco_rot);
+        const float r_moon_rot = Mojo::DegressToRadians(moon_rot);
 
-        cucco_pos = Mojo::Vector2f(400.0f + cos(r_cucco_rot) * cucco_radius, 300.0f + sin(r_cucco_rot) * cucco_radius);
+        moon_pos = Mojo::Vector2f(400.0f + cos(r_moon_rot) * moon_radius, 300.0f + sin(r_moon_rot) * moon_radius);
     }
 
     void Default::Draw()
@@ -52,15 +52,21 @@ namespace States
         graphics_service->SetMatrix(Mojo::Graphics::MATRIX_PROJECTION, projection_matrix);
 
         static Mojo::Texture sprite_sheet = graphics_service->CreateTextureFromFile("data/textures/sheet.png", false);
-        static const Mojo::Sprite::Frame cucco_frames[] = {
+        static const Mojo::Sprite::Frame moon_frames[] = {
             { 0, 0, 16, 16 }
         };
 
-        static Mojo::Sprite cucco = Mojo::Sprite(1, &cucco_frames[0]);
-        static Mojo::SpriteBatch sprite_batch = Mojo::SpriteBatch(1);
+        static const Mojo::Sprite::Frame sun_frames[] = {
+            { 0, 16, 32, 32 }
+        };
+
+        static Mojo::Sprite moon = Mojo::Sprite(1, &moon_frames[0]);
+        static Mojo::Sprite sun  = Mojo::Sprite(1, &sun_frames[0]);
+        static Mojo::SpriteBatch sprite_batch = Mojo::SpriteBatch(2);
 
         sprite_batch.Begin(sprite_sheet);
-        sprite_batch.Draw(cucco, 0, cucco_pos, Mojo::Vector2f(4.0f, 4.0f));
+        sprite_batch.Draw(sun,  0, Mojo::Vector2f(400.0f, 300.0f - 32.0f * 2.0f), Mojo::Vector2f(4.0f, 4.0f));
+        sprite_batch.Draw(moon, 0, moon_pos, Mojo::Vector2f(4.0f, 4.0f));
         sprite_batch.End();
     }
 }
