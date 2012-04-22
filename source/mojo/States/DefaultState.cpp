@@ -57,7 +57,7 @@ namespace States
         };
 
         static const Mojo::Sprite::Frame sun_frames[] = {
-            { 0, 16, 32, 32 }
+            { 48, 16, 32, 32 }
         };
 
         static Mojo::Sprite moon = Mojo::Sprite(1, &moon_frames[0]);
@@ -65,7 +65,7 @@ namespace States
         static Mojo::SpriteBatch sprite_batch = Mojo::SpriteBatch(2);
 
         sprite_batch.Begin(sprite_sheet);
-        sprite_batch.Draw(sun,  0, Mojo::Vector2f(400.0f, 300.0f - 32.0f * 2.0f), Mojo::Vector2f(4.0f, 4.0f));
+        sprite_batch.Draw(sun,  0, Mojo::Vector2f(400.0f, 300.0f), Mojo::Vector2f(4.0f, 4.0f));
         sprite_batch.Draw(moon, 0, moon_pos, Mojo::Vector2f(4.0f, 4.0f));
         sprite_batch.End();
     }

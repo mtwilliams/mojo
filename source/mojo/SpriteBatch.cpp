@@ -66,10 +66,10 @@ namespace Mojo
         sprite_mat.Scale(scale);
 
         const Mojo::Vector3f positions[4] = {
-            sprite_mat * Mojo::Vector3f(sprite_frame.x, sprite_frame.y + sprite_frame.height, 0.0f),
-            sprite_mat * Mojo::Vector3f(sprite_frame.x, sprite_frame.y, 0.0f),
-            sprite_mat * Mojo::Vector3f(sprite_frame.x + sprite_frame.width, sprite_frame.y, 0.0f),
-            sprite_mat * Mojo::Vector3f(sprite_frame.x + sprite_frame.width, sprite_frame.y + sprite_frame.height, 0.0f)
+            sprite_mat * Mojo::Vector3f(0.0f, sprite_frame.height, 0.0f),
+            sprite_mat * Mojo::Vector3f(0.0f, 0.0f, 0.0f),
+            sprite_mat * Mojo::Vector3f(sprite_frame.width, 0.0f, 0.0f),
+            sprite_mat * Mojo::Vector3f(sprite_frame.width, sprite_frame.height, 0.0f)
         };
 
         Vertex vertices[6] = {
