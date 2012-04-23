@@ -5,7 +5,7 @@
 
 namespace Mojo
 {
-    template <typename T = int32_t, uint32_t S = 1000>
+    template < typename T = int32_t, uint32_t S = 1000 >
     class Duration
     {
         public:
@@ -26,15 +26,15 @@ namespace Mojo
 
             inline Mojo::Duration<T, S> operator+( const Mojo::Duration<T, S>& other ) const { return Mojo::Duration<T, S>(_ticks + other._ticks); }
             inline Mojo::Duration<T, S> operator-( const Mojo::Duration<T, S>& other ) const { return Mojo::Duration<T, S>(_ticks - other._ticks); }
-            inline Mojo::Duration<T, S>& operator+=( const Mojo::Duration<T, S>& other ) { ticks += other._ticks; return *this; }
-            inline Mojo::Duration<T, S>& operator-=( const Mojo::Duration<T, S>& other ) { ticks -= other._ticks; return *this; }
+            inline Mojo::Duration<T, S>& operator+=( const Mojo::Duration<T, S>& other ) { _ticks += other._ticks; return *this; }
+            inline Mojo::Duration<T, S>& operator-=( const Mojo::Duration<T, S>& other ) { _ticks -= other._ticks; return *this; }
 
-            inline bool operator==( const Mojo::Duration<T, S>& other ) const { return ticks == other._ticks; }
-            inline bool operator!=( const Mojo::Duration<T, S>& other ) const { return ticks != other._ticks; }
-            inline bool operator>(  const Mojo::Duration<T, S>& other ) const { return ticks > other._ticks; }
-            inline bool operator<(  const Mojo::Duration<T, S>& other ) const { return ticks < other._ticks; }
-            inline bool operator>=( const Mojo::Duration<T, S>& other ) const { return ticks >= other._ticks; }
-            inline bool operator<=( const Mojo::Duration<T, S>& other ) const { return ticks <= other._ticks; }
+            inline bool operator==( const Mojo::Duration<T, S>& other ) const { return _ticks == other._ticks; }
+            inline bool operator!=( const Mojo::Duration<T, S>& other ) const { return _ticks != other._ticks; }
+            inline bool operator>(  const Mojo::Duration<T, S>& other ) const { return _ticks > other._ticks; }
+            inline bool operator<(  const Mojo::Duration<T, S>& other ) const { return _ticks < other._ticks; }
+            inline bool operator>=( const Mojo::Duration<T, S>& other ) const { return _ticks >= other._ticks; }
+            inline bool operator<=( const Mojo::Duration<T, S>& other ) const { return _ticks <= other._ticks; }
 
             T Seconds() const     { return _ticks / S; };
             T Miliseconds() const { return _ticks / (S / 1000); };
@@ -44,7 +44,7 @@ namespace Mojo
             T _ticks;
     };
 
-    template <typename C, typename D = Mojo::Duration<>>
+    template < typename C, typename D = Mojo::Duration<> >
     class TimePoint
     {
         public:
@@ -97,7 +97,7 @@ namespace Mojo
     class HighResolutionClock
     {
         public:
-            typedef Mojo::Duration<uint64_t, 1000000> Duration;
+            typedef Mojo::Duration<uint64_t, 1000> Duration;
             typedef Mojo::TimePoint<Mojo::HighResolutionClock, HighResolutionClock::Duration> TimePoint;
 
         public:

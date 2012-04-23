@@ -3,8 +3,8 @@
 
 #include <Mojo/Core.hpp>
 
-#define MOJO_COMPONENT_IS_A( capability ) Mojo::Component::##capability##_FLAG
-#define MOJO_COMPONENT_IS( component, capability ) component->GetFlag(Mojo::Component::##capability##_FLAG)
+#define MOJO_COMPONENT_IS_A( capability ) Mojo::Component::capability##_FLAG
+#define MOJO_COMPONENT_IS( component, capability ) component->GetFlag(Mojo::Component::capability##_FLAG)
 
 namespace Mojo
 {

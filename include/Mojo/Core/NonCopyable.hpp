@@ -8,11 +8,9 @@ namespace Mojo
 {
     class MOJO_CLASS_EXPORT(NonCopyable)
     {
-        private:
+        protected:
             NonCopyable( const NonCopyable& other );
             NonCopyable& operator=( const NonCopyable& other );
-
-        protected:
             NonCopyable() {}
             virtual ~NonCopyable() {}
     };

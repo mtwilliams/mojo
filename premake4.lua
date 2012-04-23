@@ -54,4 +54,4 @@ solution "mojo"
                 links { "glew32", "freetype2" }
 
         configuration "linux"
-            links { "GL", "glfw", "GLEW" }
+            links { "rt", "GL", "glfw", "GLEW", "freeimage", "freetype" }

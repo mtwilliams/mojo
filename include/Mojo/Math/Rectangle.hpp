@@ -12,7 +12,7 @@ namespace Mojo
         public: /* external */
             Rect() : x(0), y(0), width(0), height(0) {}
             Rect( T x, T y, T width, T height ) : x(x), y(y), width(width), height(height) {}
-            Rect( const Rect<T>& Rect ) : x(other.x), y(other.y), width(other.width), height(other.height) {}
+            Rect( const Rect<T>& other ) : x(other.x), y(other.y), width(other.width), height(other.height) {}
             Rect<T>& operator=( const Rect<T>& other ) { x = other.x; y = other.y; width = other.width; height = other.height; return *this; }
 
             T x, y, width, height;

@@ -10,12 +10,12 @@ static void OnExit()
     MOJO_GET_SERVICE(Graphics)->Destroy();
 }
 
-static void OnWindowClosed()
+void OnWindowClosed()
 {
     exit(EXIT_SUCCESS);
 }
 
-static void OnKeyPressed( Mojo::Input::Key key )
+void OnKeyPressed( Mojo::Input::Key key )
 {
     using namespace Mojo::Input;
     if( key == KEY_ESC ) {
@@ -70,6 +70,8 @@ int main( int argc, char** argv )
     {
         Mojo::HighResolutionClock::Duration time_diff = current_time - last_time;
         Mojo::Timestep timestep = time_diff.Miliseconds() / 1000.0f;
+
+        Mojo::DebugPrintf(Mojo::DBG_INFO, "timestep: %f\n", timestep);
 
         Mojo::State* state = Mojo::States::GetCurrentState();
         state->Update(timestep);

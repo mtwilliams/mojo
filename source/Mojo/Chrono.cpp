@@ -1,14 +1,16 @@
 #include <Mojo/Chrono.hpp>
 
-#ifdef MOJO_WINDOWS_BUILD
+#if defined(MOJO_WINDOWS_BUILD)
     #include <windows.h>
+#elif defined(MOJO_LINUX_BUILD)
+    #include <time.h>
 #else
     #error Not supported.
 #endif
 
 namespace Mojo
 {
-    #ifdef MOJO_WINDOWS_BUILD
+    #if defined(MOJO_WINDOWS_BUILD)
         bool SystemClock::IsSteady()
         {
             return true;
@@ -36,6 +38,8 @@ namespace Mojo
 
         HighResolutionClock::TimePoint HighResolutionClock::Now()
         {
+            // FIXME: return miliseconds, not nano-seconds.
+
             // TODO: Compensate for performance counter leaps (see Q274323)
             // TODO: Take into account the pitfalls with QueryPerformanceCounter on multiple processors
             static LARGE_INTEGER frequency;
@@ -57,6 +61,43 @@ namespace Mojo
 
             low_freq:
                 return Mojo::HighResolutionClock::TimePoint(Mojo::HighResolutionClock::Duration((uint64_t)GetTickCount() * 1000));
+        }
+    #elif defined(MOJO_LINUX_BUILD)
+        bool SystemClock::IsSteady()
+        {
+            return true;
+        }
+
+        Mojo::SystemClock::TimePoint SystemClock::Now()
+        {
+            timespec ts;
+            clock_gettime(CLOCK_MONOTONIC, &ts);
+            return Mojo::SystemClock::TimePoint(Mojo::SystemClock::Duration((int32_t)(ts.tv_sec * 1000 + ts.tv_nsec / 1000000)));
+        }
+
+        bool SteadyClock::IsSteady()
+        {
+            return true;
+        }
+
+        Mojo::SteadyClock::TimePoint SteadyClock::Now()
+        {
+            timespec ts;
+            clock_gettime(CLOCK_MONOTONIC, &ts);
+            return Mojo::SteadyClock::TimePoint(Mojo::SteadyClock::Duration((int32_t)(ts.tv_sec * 1000 + ts.tv_nsec / 1000000)));
+        }
+
+        bool HighResolutionClock::IsSteady()
+        {
+            // is it?
+            return true;
+        }
+
+        HighResolutionClock::TimePoint HighResolutionClock::Now()
+        {
+            timespec ts;
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
+            return Mojo::HighResolutionClock::TimePoint(Mojo::HighResolutionClock::Duration((uint64_t)(ts.tv_sec * 1000 + ts.tv_nsec / 1000000)));
         }
     #endif
 }
