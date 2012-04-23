@@ -40,18 +40,18 @@ namespace States
     {
         //Mojo::DebugPrintf(DBG_WARNING, "Default::Draw\n");
 
-        static Mojo::Services::Graphics* graphics_service = MOJO_GET_SERVICE(Graphics);
-        graphics_service->Clear(Mojo::Graphics::CLEAR_COLOR | Mojo::Graphics::CLEAR_DEPTH, Mojo::Colors::Gray, 1.0f);
+        static Mojo::Services::Graphics* graphics = MOJO_GET_SERVICE(Graphics);
+        graphics->Clear(Mojo::Graphics::CLEAR_COLOR | Mojo::Graphics::CLEAR_DEPTH, Mojo::Colors::Gray, 1.0f);
 
         static const Mojo::Matrix4f model_matrix      = Mojo::Matrix4f::identity;
         static const Mojo::Matrix4f view_matrix       = Mojo::Matrix4f::identity;
-        static const Mojo::Matrix4f projection_matrix = Mojo::Matrix4f::Ortho(0.0f, graphics_service->Width(), 0.0f, graphics_service->Height(), -1.0f, 1.0f);
+        static const Mojo::Matrix4f projection_matrix = Mojo::Matrix4f::Ortho(0.0f, graphics->Width(), 0.0f, graphics->Height(), -1.0f, 1.0f);
 
-        graphics_service->SetMatrix(Mojo::Graphics::MATRIX_MODEL, model_matrix);
-        graphics_service->SetMatrix(Mojo::Graphics::MATRIX_VIEW, view_matrix);
-        graphics_service->SetMatrix(Mojo::Graphics::MATRIX_PROJECTION, projection_matrix);
+        graphics->SetMatrix(Mojo::Graphics::MATRIX_MODEL, model_matrix);
+        graphics->SetMatrix(Mojo::Graphics::MATRIX_VIEW, view_matrix);
+        graphics->SetMatrix(Mojo::Graphics::MATRIX_PROJECTION, projection_matrix);
 
-        static Mojo::Texture sprite_sheet = graphics_service->CreateTextureFromFile("data/textures/sheet.png", false);
+        static Mojo::Texture sprite_sheet = graphics->CreateTextureFromFile("data/textures/sheet.png", false);
         static const Mojo::Sprite::Frame moon_frames[] = {
             { 0, 0, 16, 16 }
         };

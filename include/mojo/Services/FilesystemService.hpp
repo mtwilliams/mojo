@@ -36,6 +36,7 @@ namespace Services
 
             virtual size_t Read( Mojo::Filesystem::File* file, size_t num_bytes, void* buffer ) = 0;
             virtual size_t Write( Mojo::Filesystem::File* file, size_t num_bytes, const void* buffer ) = 0;
+            virtual size_t Length( Mojo::Filesystem::File* file ) = 0;
 
             // todo: virtual uint32_t Register_OnFileChanged() = 0;
     };

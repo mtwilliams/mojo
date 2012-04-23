@@ -82,6 +82,18 @@ namespace Providers
                 return fwrite(buffer, sizeof(uint8_t), sizeof(num_bytes), file->handle);
             }
 
+            size_t Length( Mojo::Filesystem::File* file )
+            {
+                if( !file ) return 0;
+                
+                fseek(file->handle, 0, SEEK_END);
+                long length = ftell(file->handle);
+                fseek(file->handle, 0, SEEK_SET);
+
+                if( length < 0 ) return 0;
+                return (size_t)length;
+            }
+
         private:
             bool _initialized;
     };

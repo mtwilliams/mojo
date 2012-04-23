@@ -45,9 +45,9 @@ int main( int argc, char** argv )
     }
 
     // Create graphics context
-    Mojo::Services::Graphics* graphics_service = MOJO_GET_SERVICE(Graphics);
+    Mojo::Services::Graphics* graphics = MOJO_GET_SERVICE(Graphics);
 
-    if( !graphics_service->Create(settings) ) {
+    if( !graphics->Create(settings) ) {
         Mojo::DebugPrintf(Mojo::DBG_CATASTROPHIC, "unable to create graphics context\n");
         return EXIT_FAILURE;
     }
@@ -74,7 +74,7 @@ int main( int argc, char** argv )
         Mojo::State* state = Mojo::States::GetCurrentState();
         state->Update(timestep);
         state->Draw();
-        graphics_service->SwapBuffers();
+        graphics->SwapBuffers();
 
         last_time    = current_time;
         current_time = Mojo::HighResolutionClock::Now();

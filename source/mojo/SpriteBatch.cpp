@@ -24,28 +24,28 @@ namespace Mojo
         _in_batch = true; _sprite_sheet = sprite_sheet;
     }
 
-    struct Vertex {
-        float s, t;
-        uint8_t r, g, b, a;
-        float x, y, z;
-    };
-
     void SpriteBatch::End()
     {
         mojo_assertf(_in_batch, "SpriteBatch::End without SpriteBatch::Begin\n");
 
-        Mojo::Services::Graphics* graphics_service = MOJO_GET_SERVICE(Graphics);
-        graphics_service->SetTexture(_sprite_sheet);
-        graphics_service->Enable(Mojo::Graphics::VERTEX_ARRAY);
-        graphics_service->Enable(Mojo::Graphics::COLOR_ARRAY);
-        graphics_service->Enable(Mojo::Graphics::TEX_COORD_ARRAY);
-        graphics_service->SetInterleavedArrays(Mojo::Graphics::VT_T2F_C4UB_V3F, 0, GetVertices());
-        graphics_service->Draw(Mojo::Graphics::PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, GetNumVertices());
+        Mojo::Services::Graphics* graphics = MOJO_GET_SERVICE(Graphics);
+        graphics->SetTexture(_sprite_sheet);
+        graphics->Enable(Mojo::Graphics::VERTEX_ARRAY);
+        graphics->Enable(Mojo::Graphics::COLOR_ARRAY);
+        graphics->Enable(Mojo::Graphics::TEX_COORD_ARRAY);
+        graphics->SetInterleavedArrays(Mojo::Graphics::VT_T2F_C4UB_V3F, 0, GetVertices());
+        graphics->Draw(Mojo::Graphics::PRIMITIVE_TOPOLOGY_TRIANGLELIST, 0, GetNumVertices());
         Clear();
         
         _in_batch = false; _sprite_sheet = Mojo::Texture::invalid;
         _sprite_sheet_width = 0; _sprite_sheet_height = 0;
     }
+
+    struct Vertex {
+        float s, t;
+        uint8_t r, g, b, a;
+        float x, y, z;
+    };
 
     void SpriteBatch::Draw( const Mojo::Sprite& sprite, uint32_t frame, const Mojo::Vector3f position, const Mojo::Vector2f& scale, const Mojo::Color& color )
     {

@@ -4,7 +4,6 @@
 #include <Mojo/Core.hpp>
 #include <Mojo/Math.hpp>
 #include <Mojo/Graphics.hpp>
-
 #include <Mojo/Batch.hpp>
 #include <Mojo/Sprite.hpp>
 
