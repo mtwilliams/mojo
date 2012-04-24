@@ -33,6 +33,12 @@ namespace Mojo
         delete[] _glyphs;
     }
 
+    Mojo::Rectf Font::Measure( const char* str ) const
+    {
+        // todo:
+        return Mojo::Rectf(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
     bool Font::CreateFromFile( const char* path, const uint32_t font_size, const uint32_t start_char, const size_t num_chars, const uint32_t atlas_width, const uint32_t atlas_height )
     {
         if( !path || font_size == 0 || num_chars == 0 || _num_glyphs > 0 || atlas_width == 0 || atlas_height == 0 ) return false;

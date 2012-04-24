@@ -2,6 +2,7 @@
 #define MOJO_FONT_HPP
 
 #include <Mojo/Core.hpp>
+#include <Mojo/Math.hpp>
 #include <Mojo/Graphics.hpp>
 
 namespace Mojo
@@ -23,6 +24,8 @@ namespace Mojo
             ~Font();
 
             bool CreateFromFile( const char* path, const uint32_t font_size, const uint32_t start_char = 32, const size_t num_chars = 96, const uint32_t atlas_width = 256, const uint32_t atlas_height = 256 );
+
+            Mojo::Rectf Measure( const char* str) const;
 
         private:
             float GetLineHeight() const { return _line_height; }

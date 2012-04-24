@@ -14,7 +14,7 @@ namespace Mojo
 namespace States
 {
     static float moon_rot = 0.0f;
-    static float moon_rot_speed = 60.0f;
+    static float moon_rot_speed = 36.0f;
     static float moon_radius = 128;
     static Mojo::Vector2f moon_pos = Mojo::Vector2f(400, 300);
     static Mojo::Font freeroad;
@@ -74,9 +74,11 @@ namespace States
         sprite_batch.Draw(moon, 0, moon_pos, Mojo::Vector2f(4.0f, 4.0f));
         sprite_batch.End();
 
-        static Mojo::TextBatch text_batch = Mojo::TextBatch(strlen("Hello, Mojo!"));
+        static Mojo::TextBatch text_batch = Mojo::TextBatch(256);
+        static Mojo::Rectf moon_text_bounds = freeroad.Measure("moon");
         text_batch.Begin(freeroad);
-        text_batch.Draw("Hello, Mojo!", Mojo::Vector2f(1.0f, 1.0f), Mojo::Colors::Red);
+        text_batch.Draw("moon", Mojo::Vector3f(moon_pos.x - moon_text_bounds.width / 2.0f, moon_pos.y - moon_text_bounds.height / 2.0f, 0.5f), Mojo::Colors::Black);
+        text_batch.Draw("ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 !@#$%^&*()_+ ~ []{};':\",.<>/\?|", Mojo::Vector2f(0.0f, 0.0f));
         text_batch.End();
     }
 }

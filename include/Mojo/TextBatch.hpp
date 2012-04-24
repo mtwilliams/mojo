@@ -26,7 +26,4 @@ namespace Mojo
     };
 }
 
-// static const Mojo::Rectf text_dim = arial->Measure("Hello, World");
-// text_batch->Draw("Hello, World!", Mojo::Vector2f((800.0f - text_dim.width) / 2.0f, (600.0f - text_dim.height) / 2.0f));
-
 #endif /* MOJO_TEXT_BATCH_HPP */
