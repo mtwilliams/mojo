@@ -1,9 +1,9 @@
 #ifndef MOJO_CORE_DELEGATE_HPP
 #define MOJO_CORE_DELEGATE_HPP
 
-#include <Mojo/Core/Types.hpp>
-#include <Mojo/Core/Export.hpp>
-#include <Mojo/Core/Assert.hpp>
+#include <Mojo/Core/Types.h>
+#include <Mojo/Core/Export.h>
+#include <Mojo/Core/Assert.h>
 
 #define DELEGATE_NAME Delegate0
     #include <Mojo/Core/Delegate.template>

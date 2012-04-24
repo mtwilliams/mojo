@@ -62,23 +62,22 @@ int main( int argc, char** argv )
     // Register exit handler
     atexit(&OnExit);
 
-    Mojo::HighResolutionClock::TimePoint last_time    = Mojo::HighResolutionClock::Now();
-    Mojo::HighResolutionClock::TimePoint current_time = Mojo::HighResolutionClock::Now();
+    Mojo::SteadyClock::TimePoint last_time    = Mojo::SteadyClock::Now();
+    Mojo::SteadyClock::TimePoint current_time = Mojo::SteadyClock::Now();
 
+    Mojo::Timestep last_timestep = 0.0f, timestep = (current_time - last_time).Miliseconds() / 1000.0f;
     while( true )
     {
-        Mojo::HighResolutionClock::Duration time_diff = current_time - last_time;
-        Mojo::Timestep timestep = time_diff.Miliseconds() / 1000.0f;
-
-        // Mojo::DebugPrintf(Mojo::DBG_INFO, "timestep: %f\n", timestep);
+        last_timestep = timestep;
+        timestep = (current_time - last_time).Miliseconds() / 1000.0f;
 
         Mojo::State* state = Mojo::States::GetCurrentState();
-        state->Update(timestep);
+        state->Update((timestep + last_timestep) * 0.5f);
         state->Draw();
         graphics->SwapBuffers();
 
         last_time    = current_time;
-        current_time = Mojo::HighResolutionClock::Now();
+        current_time = Mojo::SteadyClock::Now();
     }
 
     return EXIT_SUCCESS;

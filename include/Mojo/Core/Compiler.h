@@ -1,5 +1,5 @@
-#ifndef MOJO_CORE_COMPILER_HPP
-#define MOJO_CORE_COMPILER_HPP
+#ifndef MOJO_CORE_COMPILER_H
+#define MOJO_CORE_COMPILER_H
 
 // Microsoft Visual Studio:
 #ifdef _MSC_VER
@@ -16,4 +16,4 @@
     #define MOJO_CLANG_BUILD
 #endif
 
-#endif /* MOJO_CORE_COMPILER_HPP */
+#endif /* MOJO_CORE_COMPILER_H */

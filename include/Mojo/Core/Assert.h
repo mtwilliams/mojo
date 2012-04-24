@@ -1,5 +1,5 @@
-#ifndef MOJO_CORE_ASSERT_HPP
-#define MOJO_CORE_ASSERT_HPP
+#ifndef MOJO_CORE_ASSERT_H
+#define MOJO_CORE_ASSERT_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,4 +12,4 @@
     #define mojo_assertf( condition, format, ... )
 #endif
 
-#endif /* MOJO_CORE_ASSERT_HPP */
+#endif /* MOJO_CORE_ASSERT_H */

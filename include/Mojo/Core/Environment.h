@@ -1,5 +1,5 @@
-#ifndef MOJO_CORE_ENVIRONMENT_HPP
-#define MOJO_CORE_ENVIRONMENT_HPP
+#ifndef MOJO_CORE_ENVIRONMENT_H
+#define MOJO_CORE_ENVIRONMENT_H
 
 // Windows: 
 #if defined(_WIN32)
@@ -24,4 +24,4 @@
     #define MOJO_MACOSX_BUILD
 #endif
 
-#endif /* MOJO_CORE_ENVIRONMENT_HPP */
+#endif /* MOJO_CORE_ENVIRONMENT_H */

@@ -1,8 +1,8 @@
 #ifndef MOJO_CORE_EXPORT_HPP
 #define MOJO_CORE_EXPORT_HPP
 
-#include <Mojo/Core/Types.hpp>
-#include <Mojo/Core/Compiler.hpp>
+#include <Mojo/Core/Types.h>
+#include <Mojo/Core/Compiler.h>
 
 #ifdef MOJO_STATIC_BUILD
     #define MOJO_EXPORT(x) extern x
@@ -28,4 +28,4 @@
     #endif
 #endif
 
-#endif /* MOJO_CORE_EXPORT_HPP */
+#endif /* MOJO_CORE_EXPORT_H */
