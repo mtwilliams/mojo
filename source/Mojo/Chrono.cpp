@@ -56,11 +56,11 @@ namespace Mojo
                 goto low_freq;
             }
 
-            uint64_t microseconds = (uint64_t)(1000000 * (current_count.QuadPart - start_count.QuadPart) / frequency.QuadPart);
-            return Mojo::HighResolutionClock::TimePoint(Mojo::HighResolutionClock::Duration(microseconds));
+            uint64_t miliseconds = (uint64_t)(1000 * (current_count.QuadPart - start_count.QuadPart) / frequency.QuadPart);
+            return Mojo::HighResolutionClock::TimePoint(Mojo::HighResolutionClock::Duration(miliseconds));
 
             low_freq:
-                return Mojo::HighResolutionClock::TimePoint(Mojo::HighResolutionClock::Duration((uint64_t)GetTickCount() * 1000));
+                return Mojo::HighResolutionClock::TimePoint(Mojo::HighResolutionClock::Duration((uint64_t)GetTickCount()));
         }
     #elif defined(MOJO_LINUX_BUILD)
         bool SystemClock::IsSteady()

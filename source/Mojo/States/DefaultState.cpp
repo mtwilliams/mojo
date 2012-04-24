@@ -11,7 +11,7 @@ namespace Mojo
 namespace States
 {
     static float moon_rot = 0.0f;
-    static float moon_rot_speed = 36.0f;
+    static float moon_rot_speed = 60.0f;
     static float moon_radius = 128;
     static Mojo::Vector2f moon_pos = Mojo::Vector2f(400, 300);
 

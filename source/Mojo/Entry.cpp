@@ -71,7 +71,7 @@ int main( int argc, char** argv )
         Mojo::HighResolutionClock::Duration time_diff = current_time - last_time;
         Mojo::Timestep timestep = time_diff.Miliseconds() / 1000.0f;
 
-        Mojo::DebugPrintf(Mojo::DBG_INFO, "timestep: %f\n", timestep);
+        // Mojo::DebugPrintf(Mojo::DBG_INFO, "timestep: %f\n", timestep);
 
         Mojo::State* state = Mojo::States::GetCurrentState();
         state->Update(timestep);
