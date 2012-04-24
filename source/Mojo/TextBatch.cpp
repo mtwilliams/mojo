@@ -60,14 +60,24 @@ namespace Mojo
         const char* titer = text;
         while( const char ch = *titer++ ) {
             switch( ch ) {
-                case ' ':  x_offset += _font->GetGlyphOffset(' '); break;
-                case '\t': x_offset += _font->GetGlyphOffset(' ') * 4.0f; break;
+                case ' ':  x_offset += _font->GetGlyphAdvance(' '); break;
+                case '\t': x_offset += _font->GetGlyphAdvance(' ') * 4.0f; break;
                 case '\n': x_offset = 0.0f; y_offset += _font->GetLineHeight(); break;
                 case '\r': break;
                 default: {
+                    const Mojo::Font::Glyph glyph = _font->GetGlyph(ch);
 
-
-                    x_offset += _font->GetGlyphOffset(ch); break;
+                    const Vertex vertices[6] = {
+                        { glyph.tex_coords[0], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + x_offset, position.y + y_offset + glyph.height, position.z },
+                        { glyph.tex_coords[0], glyph.tex_coords[1], color.r, color.g, color.b, color.a, position.x + x_offset, position.y + y_offset, position.z },
+                        { glyph.tex_coords[2], glyph.tex_coords[1], color.r, color.g, color.b, color.a, position.x + x_offset + glyph.width, position.y + y_offset, position.z },
+                        { glyph.tex_coords[2], glyph.tex_coords[1], color.r, color.g, color.b, color.a, position.x + x_offset + glyph.width, position.y + y_offset, position.z },
+                        { glyph.tex_coords[2], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + x_offset + glyph.width, position.y + y_offset + glyph.height, position.z },
+                        { glyph.tex_coords[0], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + x_offset, position.y + y_offset + glyph.height, position.z }
+                    };
+                    
+                    x_offset += _font->GetGlyphAdvance(ch);
+                    Add(6, (const void*)&vertices[0]);
                 } break;
             }
         }

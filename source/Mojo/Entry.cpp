@@ -62,7 +62,6 @@ int main( int argc, char** argv )
     // Register exit handler
     atexit(&OnExit);
 
-    
     Mojo::HighResolutionClock::TimePoint last_time    = Mojo::HighResolutionClock::Now();
     Mojo::HighResolutionClock::TimePoint current_time = Mojo::HighResolutionClock::Now();
 

@@ -299,6 +299,40 @@ namespace Providers
                 glBlendFunc(sfactor, dfactor);
             }
 
+            Mojo::Texture CreateTexture2D( const uint32_t width, const uint32_t height, const Mojo::Graphics::TextureFormat tex_format, const void* pixels, const bool mipmap )
+            {
+                using namespace Mojo::Graphics;
+
+                Mojo::Providers::Graphics::Texture texture;
+                texture.type     = Mojo::Providers::Graphics::Texture::TEXUTRE_2D;
+                texture.num_refs = 1;
+                texture.width    = width;
+                texture.height   = height;
+                texture.depth    = 1;
+
+                GLint internal_format = 0;
+                GLenum format = 0, type = 0;
+                switch( tex_format ) {
+                    case TF_RGB8:  internal_format = 3; format = GL_RGB; type = GL_UNSIGNED_BYTE; break;
+                    case TF_RGBA8: internal_format = 4; format = GL_RGBA; type = GL_UNSIGNED_BYTE; break;
+                }
+
+                glGenTextures(1, (GLuint*)&texture.id);
+                glBindTexture(GL_TEXTURE_2D, texture.id);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mipmap ? GL_LINEAR : GL_NEAREST);
+                glTexImage2D(GL_TEXTURE_2D, 0, internal_format, texture.width, texture.height, 0, format, type, pixels);
+
+                if( mipmap ) {
+                    glEnable(GL_TEXTURE_2D);
+                    glGenerateMipmap(GL_TEXTURE_2D);
+                }
+
+                const uint32_t id = _next_texture_id++;
+                _textures.insert(std::make_pair(id, texture));
+                return Mojo::Texture(Mojo::Graphics::Handle::TEXTURE, id);
+            }
+
             Mojo::Texture CreateTextureFromFile( const char* path, bool mipmap )
             {
                 // todo: have this go through MOJO_GET_SERVICE(Filesystem)

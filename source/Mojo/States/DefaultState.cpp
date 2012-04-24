@@ -3,6 +3,9 @@
 #include <Mojo/Sprite.hpp>
 #include <Mojo/SpriteBatch.hpp>
 
+#include <Mojo/Font.hpp>
+#include <Mojo/TextBatch.hpp>
+
 #include <Mojo/Debug.hpp>
 #include <Mojo/Services.hpp>
 
@@ -14,10 +17,12 @@ namespace States
     static float moon_rot_speed = 60.0f;
     static float moon_radius = 128;
     static Mojo::Vector2f moon_pos = Mojo::Vector2f(400, 300);
+    static Mojo::Font freeroad;
 
     Default::Default()
         : _cube_wireframe(MOJO_GET_SERVICE(Graphics)->CreateTextureFromFile("data/textures/cube_wireframe.png", true))
     {
+        freeroad.CreateFromFile("data/fonts/freeroad.ttf", 12);
     }
 
     Default::~Default()
@@ -68,6 +73,11 @@ namespace States
         sprite_batch.Draw(sun,  0, Mojo::Vector2f(400.0f, 300.0f), Mojo::Vector2f(4.0f, 4.0f));
         sprite_batch.Draw(moon, 0, moon_pos, Mojo::Vector2f(4.0f, 4.0f));
         sprite_batch.End();
+
+        static Mojo::TextBatch text_batch = Mojo::TextBatch(strlen("Hello, Mojo!"));
+        text_batch.Begin(freeroad);
+        text_batch.Draw("Hello, Mojo!", Mojo::Vector2f(1.0f, 1.0f), Mojo::Colors::Red);
+        text_batch.End();
     }
 }
 }

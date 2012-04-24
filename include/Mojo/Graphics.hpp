@@ -20,6 +20,11 @@ namespace Graphics
         DEPTH_TEST = 2,
     };
 
+    enum TextureFormat {
+        TF_RGB8  = 1,
+        TF_RGBA8 = 2,
+    };
+
     enum VertexFormat {
         VT_V2F             = 1,
         VT_V3F             = 2,

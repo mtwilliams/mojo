@@ -66,7 +66,8 @@ namespace Services
             virtual void SetBlendOp( const Mojo::Graphics::BlendOp blend_op ) = 0;
             virtual void SetBlendFunc( const Mojo::Graphics::BlendFunc src, const Mojo::Graphics::BlendFunc dest ) = 0;
 
-            virtual Mojo::Texture CreateTextureFromFile( const char* path, bool mipmap ) = 0;
+            virtual Mojo::Texture CreateTexture2D( const uint32_t width, const uint32_t height, const Mojo::Graphics::TextureFormat tex_format, const void* pixels, const bool mipmap = true ) = 0;
+            virtual Mojo::Texture CreateTextureFromFile( const char* path, bool mipmap = true ) = 0;
             virtual void GetTextureDimensions( const Mojo::Texture& texture_handle, uint32_t& width, uint32_t& height, uint32_t& depth ) = 0;
             virtual void SetTexture( const Mojo::Texture& texture_handle ) = 0;
 
