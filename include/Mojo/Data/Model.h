@@ -8,7 +8,7 @@ typedef enum MJM_FLAGS {
     MJM_COMPRESSED = (1 << 0),
 
     /* the model was compiled to target left-handed coordinate systems: */
-    MJM_LEFT_HANDED = (1 << 1)
+    MJM_LEFT_HANDED = (1 << 1),
 
     /* the model was compiled to target the current endianess: */
     MJM_TARGETED_ENDIANESS = (1 << 2),
