@@ -30,7 +30,7 @@ solution "mojo"
             flags { "Optimize" }
 
         configuration "windows"
-            defines { "GLFW_DLL" }
+            defines { "_HAS_ITERATOR_DEBUGGING=0", "_SECURE_SCL=0", "GLFW_DLL" }
             links { "opengl32", "GLFWDLL", "FreeImage" }
 
             includedirs {
@@ -55,3 +55,46 @@ solution "mojo"
 
         configuration "linux"
             links { "rt", "GL", "glfw", "GLEW", "freeimage", "freetype" }
+
+
+    project "mjmc"
+        kind "ConsoleApp"
+        language "C"
+        targetdir "bin/tools"
+
+        includedirs { 
+            "include"
+        }
+
+        files {
+            "tools/mjmc.c"
+        }
+
+        configuration "debug"
+            targetsuffix "d"
+            defines { "MOJO_DEBUG_BUILD" }
+            flags { "Symbols" }
+
+        configuration "release"
+            defines { "MOJO_RELEASE_BUILD" }
+            flags { "Optimize" }
+
+        configuration "windows"
+            defines { "_HAS_ITERATOR_DEBUGGING=0", "_SECURE_SCL=0" }
+
+            includedirs {
+                "dependencies/assimp-2.0.863/include"
+            }
+
+            libdirs { 
+                "dependencies/assimp-2.0.863/lib-msvc100"
+            }
+
+            configuration { "debug", "windows" }
+                links { "assimpd" }
+
+            configuration { "release", "windows" }
+                links { "assimp" }
+
+        configuration "linux"
+            

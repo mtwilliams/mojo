@@ -8,7 +8,7 @@ typedef enum MJM_FLAGS {
     MJM_COMPRESSED = (1 << 0),
 
     /* the model was compiled to target left-handed coordinate systems: */
-    MJM_LEFT_HANDED = (1 << 1)
+    MJM_LEFT_HANDED = (1 << 1),
 
     /* the model was compiled to target the current endianess: */
     MJM_TARGETED_ENDIANESS = (1 << 2),
@@ -34,10 +34,10 @@ typedef enum MJM_BLOCK_TYPES {
 
 typedef struct mjmHeader {
     /* magic value used to determine if a file is a MJM: */
-    uint8_t  magic[3];
+    uint8_t magic[3];
     
     /* the version of the model format: */
-    uint8_t  version;
+    uint8_t version;
 
     /* the uncompressed length of the model: */
     uint32_t length;
