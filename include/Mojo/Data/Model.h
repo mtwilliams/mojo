@@ -27,6 +27,9 @@ typedef enum MJM_FLAGS {
 typedef enum MJM_BLOCK_TYPES {
     /* see mjmBlock_Meshes: */
     MJM_BLK_MESHES = 0x01,
+
+    /* see mjmBlock_Materials: */
+    MJM_BLK_MATERIALS = 0x02,
 } MJM_BLOCK_TYPES;
 
 typedef struct mjmHeader {
@@ -79,9 +82,11 @@ typedef struct mjmMesh {
     const char* name;
 
     /* the bones associated with this mesh, see mjmBone:
-       Note: a value of zero indicates there are no bones associated with this mesh.
-             lookups should be performed using bone_group - 1 { bone_group =/= 0 }. */
-    uint32_t bone_group;
+       Note: a value of zero indicates there are no bones associated with this mesh. */
+    uint32_t num_bones;
+
+    /* the bones [0, num_bones - 1], see mjmBone: */
+    mjmBone* bones;
 
     /* see MJM_VERTEX_FORMAT:
        Note: this is a collection of flags, not an enum! */
@@ -90,7 +95,7 @@ typedef struct mjmMesh {
     /* the data is stored by flag order (skipping non-set flags):
        for example, MJM_VF_POSITIONS | MJM_VF_COLORS | MJM_VF_TEX_COORDS would be:
          { float3 pos; ubyte4 color; float2 uv/st; } */
-    uint8_t vertices[1];
+    uint8_t* vertices;
 } mjmMesh;
 
 typedef struct mjmBlock_Meshes {
@@ -100,5 +105,18 @@ typedef struct mjmBlock_Meshes {
     /* the meshes [0, num_meshes - 1], see mjmMesh: */
     mjmMesh meshes[1];
 } mjmBlock_Meshes;
+
+typedef struct mjmBlock_Materials {
+    
+} mjmBlock_Materials;
+
+struct mjmModel;
+typedef mjmModel mjmModel;
+
+extern mjmModel* mjmLoadFromFile( const char* path );
+extern mjmModel* mjmLoadFromMemory( const void* memory );
+extern void mjmDestroy( mjmModel* model );
+
+extern const mjmMesh* mjmGetMeshByName( const mjmModel* model, const char* name );
 
 #endif /* MOJO_DATA_MODEL_H */
