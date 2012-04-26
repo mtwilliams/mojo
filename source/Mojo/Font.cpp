@@ -37,6 +37,8 @@ namespace Mojo
 
     Mojo::Rectf Font::Measure( const char* string )
     {
+        // bug: the width measurement is slightly off
+
         char last_ch = '\0';
         float x_max = 0.0f, y_max = 0.0f;
         float x_offset = 0.0f, y_offset = 0.0f;
@@ -51,7 +53,7 @@ namespace Mojo
                 case '\r': break;
                 default: {
                     x_offset += _glyphs[ch - _start_glyph].x_advance + _glyphs[ch - _start_glyph].x_bearing;
-                    const float my = (y_offset + GetLineHeight()) - _glyphs[ch - _start_glyph].y_bearing + _glyphs[ch - _start_glyph].height;
+                    const float my = y_offset + _base_line - _glyphs[ch - _start_glyph].y_bearing + _glyphs[ch - _start_glyph].height;
                     y_max = y_max < my ? my : y_max;
                 } break;
             }
@@ -130,13 +132,14 @@ namespace Mojo
             };
 
             uint32_t min_area = 0;
-            for( uint32_t i = 0; i < num_chars; ++i ) min_area += uint32_t(glyphs[i].width * glyphs[i].height);
+            for( uint32_t i = 0; i < num_chars; ++i ) min_area += uint32_t((glyphs[i].width + 1) * (glyphs[i].height + 1));
 
             for( uint32_t i = 0; i < 4; ++i ) {
                 if( atlas_sizes[i].area < min_area ) continue;
-                
-                atlas_width  = atlas_sizes[i].width;
-                atlas_height = atlas_sizes[i].height;
+
+                const uint32_t index = (i + 1) > 4 ? 4 : (i + 1);
+                atlas_width  = atlas_sizes[index].width;
+                atlas_height = atlas_sizes[index].height;
                 break;
             }
 
@@ -205,6 +208,7 @@ namespace Mojo
         _start_glyph = start_char;
         _num_glyphs  = num_chars;
         _glyphs      = glyphs;
+        _base_line   = font_size;
         _line_height = line_height;
 
         return true;

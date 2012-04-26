@@ -69,7 +69,7 @@ namespace Mojo
 
                     const float min_x = x_offset + _font->_glyphs[ch - _font->_start_glyph].x_bearing;
                     const float max_x = min_x + _font->_glyphs[ch - _font->_start_glyph].width;
-                    const float min_y = (y_offset + _font->GetLineHeight()) - _font->_glyphs[ch - _font->_start_glyph].y_bearing;
+                    const float min_y = y_offset + _font->_base_line - _font->_glyphs[ch - _font->_start_glyph].y_bearing;
                     const float max_y = min_y + _font->_glyphs[ch - _font->_start_glyph].height;
 
                     const Vertex vertices[6] = {

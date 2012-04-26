@@ -7,11 +7,12 @@ struct mjmModel {
 
 mjmModel* mjmLoadFromFile( const char* path )
 {
-
+    return NULL;
 }
 
 mjmModel* mjmLoadFromMemory( const void* memory )
 {
+    return NULL;
 }
 
 void mjmDestroy( mjmModel* model )

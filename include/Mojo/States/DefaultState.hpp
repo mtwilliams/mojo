@@ -18,7 +18,6 @@ namespace States
             void Draw();
 
         private:
-            Mojo::Texture _cube_wireframe;
     };
 }
 }
