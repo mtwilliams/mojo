@@ -24,7 +24,7 @@ namespace Mojo
             Font();
             ~Font();
 
-            bool CreateFromFile( const char* path, const uint32_t font_size, const uint32_t start_char = 32, const size_t num_chars = 96 );
+            bool CreateFromFile( const char* path, const uint32_t font_size, const bool smooth = true, const uint32_t start_char = 32, const size_t num_chars = 96 );
 
             Mojo::Rectf Measure( const char* string );
 

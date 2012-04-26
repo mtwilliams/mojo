@@ -17,7 +17,7 @@ namespace States
 
     Default::Default()
     {
-        font.CreateFromFile("data/fonts/verdana_bold.ttf", 8);
+        font.CreateFromFile("data/fonts/verdana_bold.ttf", 12, false);
     }
 
     Default::~Default()
@@ -49,7 +49,7 @@ namespace States
 
         text_batch.Begin(font);
         text_batch.Draw("Centered", Mojo::Vector3f((int)((800.0f - centered_text_bounds.width) / 2.0f), (int)((600.0f - centered_text_bounds.height) / 2.0f), 0.5f), Mojo::Color(222, 222, 222));
-        text_batch.Draw("Hello, Mojo.\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n~!@#$%^&*()-_=+\n[];',./\{}:\"<>?|", Mojo::Vector2f(0.0f, 2.0f), Mojo::Color(222, 222, 222));
+        text_batch.Draw("Hello, Mojo.\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n~!@#$%^&*()-_=+\n[];',./\\{}:\"<>?|\nSource, much.", Mojo::Vector2f(0.0f, 2.0f), Mojo::Color(222, 222, 222));
         text_batch.End();
     }
 }

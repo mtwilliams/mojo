@@ -63,7 +63,7 @@ namespace Mojo
         return Mojo::Rectf(0.0f, 0.0f, x_max, y_max);
     }
 
-    bool Font::CreateFromFile( const char* path, const uint32_t font_size, const uint32_t start_char, const size_t num_chars )
+    bool Font::CreateFromFile( const char* path, const uint32_t font_size, const bool smooth, const uint32_t start_char, const size_t num_chars )
     {
         if( path == NULL || font_size == 0 || num_chars == 0 || _num_glyphs > 0 ) return false;
 
@@ -115,7 +115,7 @@ namespace Mojo
             glyphs[i].x_bearing = (FT_HAS_VERTICAL(ft_face) ? ft_face->glyph->metrics.vertBearingX : ft_face->glyph->metrics.horiBearingX) >> 6;
             glyphs[i].y_bearing = (FT_HAS_VERTICAL(ft_face) ? ft_face->glyph->metrics.vertBearingY : ft_face->glyph->metrics.horiBearingY) >> 6;
             
-            FT_Glyph_To_Bitmap(&ft_glyphs[i], FT_RENDER_MODE_NORMAL, 0, 1);
+            FT_Glyph_To_Bitmap(&ft_glyphs[i], smooth ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, 0, 1);
 
             const FT_Bitmap bitmap = bm_glyphs[i]->bitmap;
             glyphs[i].width  = bitmap.width;
@@ -172,7 +172,12 @@ namespace Mojo
                 } break;
 
                 case FT_PIXEL_MODE_MONO: {
-                    mojo_assertf(0, "Font::CreateFromFile()\n -> TODO: FT_PIXEL_MODE_MONO.\n"); 
+                    const uint8_t* bm_pixels = (const uint8_t*)bitmap.buffer;
+
+                    for( uint32_t y = 0; y < bitmap.rows; ++y ) {
+                        for( uint32_t x = 0; x < bitmap.width; ++x ) bm_buffer[(x + y * bitmap.width) * 4 + 3] = ((bm_pixels[x / 8]) & (1 << (7 - (x % 8)))) ? 0xFF : 0x00;
+                        bm_pixels += bitmap.pitch;
+                    }
                 } break;
                 
                 case FT_PIXEL_MODE_GRAY: {
