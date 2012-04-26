@@ -55,6 +55,7 @@ solution "mojo"
 
         configuration "linux"
             links { "rt", "GL", "glfw", "GLEW", "freeimage", "freetype" }
+            buildoptions { '`freetype-config --cflags`' }
 
 
     project "mjmc"
