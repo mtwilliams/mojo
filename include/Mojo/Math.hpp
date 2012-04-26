@@ -14,7 +14,9 @@ namespace Mojo
     typedef Mojo::Vector3<float> Vector3f;
     typedef Mojo::Vector4<float> Vector4f;
     typedef Mojo::Matrix4<float> Matrix4f;
-    typedef Mojo::Rect<float>    Rectf;
+
+    typedef Mojo::Rect<float> Rectf;
+    typedef Mojo::Rect<int>   Recti;
 }
 
 #endif /* MOJO_MATH_HPP */

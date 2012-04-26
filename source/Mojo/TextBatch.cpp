@@ -60,23 +60,29 @@ namespace Mojo
         const char* titer = text;
         while( const char ch = *titer++ ) {
             switch( ch ) {
-                case ' ':  x_offset += _font->GetGlyphAdvance(' '); break;
-                case '\t': x_offset += _font->GetGlyphAdvance(' ') * 4.0f; break;
-                case '\n': x_offset = 0.0f; y_offset += _font->GetLineHeight(); break;
+                case ' ':  x_offset += _font->_glyphs[' ' - _font->_start_glyph].x_advance; break;
+                case '\t': x_offset += _font->_glyphs[' ' - _font->_start_glyph].x_advance * 4; break;
+                case '\n': x_offset = 0.0f; y_offset += _font->GetLineHeight() + 1.0f; break;
                 case '\r': break;
                 default: {
-                    const Mojo::Font::Glyph glyph = _font->GetGlyph(ch);
+                    const Mojo::Font::Glyph glyph = _font->_glyphs[ch - _font->_start_glyph];
+
+                    const float min_x = x_offset + _font->_glyphs[ch - _font->_start_glyph].x_bearing;
+                    const float max_x = min_x + _font->_glyphs[ch - _font->_start_glyph].width;
+                    const float min_y = (y_offset + _font->GetLineHeight()) - _font->_glyphs[ch - _font->_start_glyph].y_bearing;
+                    const float max_y = min_y + _font->_glyphs[ch - _font->_start_glyph].height;
 
                     const Vertex vertices[6] = {
-                        { glyph.tex_coords[0], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + x_offset, position.y + y_offset + glyph.height, position.z },
-                        { glyph.tex_coords[0], glyph.tex_coords[1], color.r, color.g, color.b, color.a, position.x + x_offset, position.y + y_offset, position.z },
-                        { glyph.tex_coords[2], glyph.tex_coords[1], color.r, color.g, color.b, color.a, position.x + x_offset + glyph.width, position.y + y_offset, position.z },
-                        { glyph.tex_coords[2], glyph.tex_coords[1], color.r, color.g, color.b, color.a, position.x + x_offset + glyph.width, position.y + y_offset, position.z },
-                        { glyph.tex_coords[2], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + x_offset + glyph.width, position.y + y_offset + glyph.height, position.z },
-                        { glyph.tex_coords[0], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + x_offset, position.y + y_offset + glyph.height, position.z }
+                        { glyph.tex_coords[0], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + min_x, position.y + max_y, position.z },
+                        { glyph.tex_coords[0], glyph.tex_coords[1], color.r, color.g, color.b, color.a, position.x + min_x, position.y + min_y, position.z },
+                        { glyph.tex_coords[2], glyph.tex_coords[1], color.r, color.g, color.b, color.a, position.x + max_x, position.y + min_y, position.z },
+
+                        { glyph.tex_coords[2], glyph.tex_coords[1], color.r, color.g, color.b, color.a, position.x + max_x, position.y + min_y, position.z },
+                        { glyph.tex_coords[2], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + max_x, position.y + max_y, position.z },
+                        { glyph.tex_coords[0], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + min_x, position.y + max_y, position.z }
                     };
                     
-                    x_offset += _font->GetGlyphAdvance(ch);
+                    x_offset += _font->_glyphs[ch - _font->_start_glyph].x_advance;
                     Add(6, (const void*)&vertices[0]);
                 } break;
             }

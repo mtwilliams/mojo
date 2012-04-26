@@ -77,6 +77,11 @@ typedef enum MJM_VERTEX_FORMAT {
     MJM_VF_TANS_AND_BTANS = (1 << 4),
 } MJM_VERTEX_FORMAT;
 
+typedef struct mjmBone {
+    /* shut up msvc */
+    float weights[4];
+} mjmBone;
+
 typedef struct mjmMesh {
     /* a null terminated UTF-8 string: */
     const char* name;
@@ -107,11 +112,11 @@ typedef struct mjmBlock_Meshes {
 } mjmBlock_Meshes;
 
 typedef struct mjmBlock_Materials {
-    
+    /* the number of materials in this block: */
+    uint8_t num_materials;
 } mjmBlock_Materials;
 
-struct mjmModel;
-typedef mjmModel mjmModel;
+typedef struct mjmModel mjmModel;
 
 extern mjmModel* mjmLoadFromFile( const char* path );
 extern mjmModel* mjmLoadFromMemory( const void* memory );

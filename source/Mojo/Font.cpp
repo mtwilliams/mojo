@@ -1,5 +1,7 @@
 #include <Mojo/Font.hpp>
 #include <Mojo/Services.hpp>
+#include <Mojo/TextureAtlas.hpp>
+#include <Mojo/BookshelfTexturePacker.hpp>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -33,15 +35,34 @@ namespace Mojo
         delete[] _glyphs;
     }
 
-    Mojo::Rectf Font::Measure( const char* str ) const
+    Mojo::Rectf Font::Measure( const char* string )
     {
-        // todo:
-        return Mojo::Rectf(0.0f, 0.0f, 0.0f, 0.0f);
+        char last_ch = '\0';
+        float x_max = 0.0f, y_max = 0.0f;
+        float x_offset = 0.0f, y_offset = 0.0f;
+        while( const char ch = *string++ ) {
+            last_ch = ch;
+            x_max = x_max < x_offset ? x_offset : x_max; 
+
+            switch( ch ) {
+                case ' ':  x_offset += _glyphs[' ' - _start_glyph].x_advance; break;
+                case '\t': x_offset += _glyphs[' ' - _start_glyph].x_advance * 4; break;
+                case '\n': x_offset = 0.0f; y_offset += GetLineHeight() + 1.0f; break;
+                case '\r': break;
+                default: {
+                    x_offset += _glyphs[ch - _start_glyph].x_advance + _glyphs[ch - _start_glyph].x_bearing;
+                    const float my = (y_offset + GetLineHeight()) - _glyphs[ch - _start_glyph].y_bearing + _glyphs[ch - _start_glyph].height;
+                    y_max = y_max < my ? my : y_max;
+                } break;
+            }
+        }
+
+        return Mojo::Rectf(0.0f, 0.0f, x_max, y_max);
     }
 
-    bool Font::CreateFromFile( const char* path, const uint32_t font_size, const uint32_t start_char, const size_t num_chars, const uint32_t atlas_width, const uint32_t atlas_height )
+    bool Font::CreateFromFile( const char* path, const uint32_t font_size, const uint32_t start_char, const size_t num_chars )
     {
-        if( !path || font_size == 0 || num_chars == 0 || _num_glyphs > 0 || atlas_width == 0 || atlas_height == 0 ) return false;
+        if( path == NULL || font_size == 0 || num_chars == 0 || _num_glyphs > 0 ) return false;
 
         Mojo::Services::Filesystem* filesystem = MOJO_GET_SERVICE(Filesystem);
         Mojo::Filesystem::File* file = filesystem->Open(path, Mojo::Filesystem::FILE_READ);
@@ -66,98 +87,126 @@ namespace Mojo
 
         filesystem->Close(file);
 
-        FT_Face face;
-        if( FT_New_Memory_Face(Mojo::GetFreeTypeLibrary(), (const FT_Byte*)buffer, file_len, 0, &face) ) {
+        FT_Face ft_face;
+        if( FT_New_Memory_Face(Mojo::GetFreeTypeLibrary(), (const FT_Byte*)buffer, file_len, 0, &ft_face) ) {
             delete[] buffer;
             return false;
         }
 
-        FT_Set_Char_Size(face, font_size * 64, font_size * 64, 96, 96);
+        FT_Set_Char_Size(ft_face, font_size * 64, font_size * 64, 96, 96);
 
-        uint32_t atlas_x = 0, atlas_y = 0;
-        const uint32_t atlas_pitch = atlas_width * 4;
-        uint8_t* atlas_pixels = new uint8_t[atlas_width * atlas_height * 4];
-        memset((void*)atlas_pixels, 255, atlas_width * atlas_height * 4);
+        const float line_height = ft_face->size->metrics.height >> 6;
 
-        Mojo::Font::Glyph* glyphs = new Mojo::Font::Glyph[num_chars];
+        // Load the glyphs
+        Font::Glyph*    glyphs       = new Font::Glyph[num_chars];
+        FT_Glyph*       ft_glyphs    = new FT_Glyph[num_chars];
+        FT_BitmapGlyph* bm_glyphs    = (FT_BitmapGlyph*)ft_glyphs;
 
-        uint32_t max_glyph_height = 0, max_row_height = 0;
-        const uint32_t end_char = start_char + num_chars;
-        for( uint32_t ch = start_char; ch < end_char; ++ch ) {
-            // todo: check for errors
+        uint32_t bm_max_width = 0, bm_max_height = 0;
+        for( uint32_t i = 0; i < num_chars; ++i ) {
+            FT_Load_Char(ft_face, start_char + i, FT_LOAD_DEFAULT);
+            FT_Get_Glyph(ft_face->glyph, &ft_glyphs[i]);
 
-            FT_Glyph glyph;
-            FT_Load_Glyph(face, FT_Get_Char_Index(face, ch), FT_LOAD_DEFAULT);
-            FT_Get_Glyph(face->glyph, &glyph);
+            glyphs[i].x_advance = ft_face->glyph->advance.x >> 6;
+            glyphs[i].y_advance = ft_face->glyph->advance.y >> 6;
+            glyphs[i].x_bearing = (FT_HAS_VERTICAL(ft_face) ? ft_face->glyph->metrics.vertBearingX : ft_face->glyph->metrics.horiBearingX) >> 6;
+            glyphs[i].y_bearing = (FT_HAS_VERTICAL(ft_face) ? ft_face->glyph->metrics.vertBearingY : ft_face->glyph->metrics.horiBearingY) >> 6;
+            
+            FT_Glyph_To_Bitmap(&ft_glyphs[i], FT_RENDER_MODE_NORMAL, 0, 1);
 
-            const float advance = face->glyph->advance.x >> 6;
+            const FT_Bitmap bitmap = bm_glyphs[i]->bitmap;
+            glyphs[i].width  = bitmap.width;
+            glyphs[i].height = bitmap.rows;
 
-            FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, 0, 1);
-            FT_BitmapGlyph bm_glyph = (FT_BitmapGlyph)glyph;
-            FT_Bitmap bitmap = bm_glyph->bitmap;
+            bm_max_width  = bm_max_width < bitmap.width ? bitmap.width : bm_max_width;
+            bm_max_height = bm_max_height < bitmap.rows ? bitmap.rows : bm_max_height;
+        }
 
-            const int32_t  bm_width  = bitmap.width;
-            const int32_t  bm_height = bitmap.rows;
-            const uint8_t* bm_pixels = bitmap.buffer;
-            const float offs_x = bm_glyph->left;
-            const float offs_y = bm_glyph->top;
+        // Determine the texture atlas size
+        uint32_t atlas_width = 0, atlas_height = 0; {
+            static const struct { uint32_t width, height, area; } atlas_sizes[] = {
+                {  64,  64,  64 *  64 }, { 128, 128, 128 * 128 },
+                { 256, 256, 256 * 256 }, { 512, 512, 512 * 512 }
+            };
 
-            max_row_height = max_row_height < bm_height ? bm_height : max_row_height;
-            max_glyph_height = max_glyph_height < bm_height ? bm_height : max_glyph_height;
+            uint32_t min_area = 0;
+            for( uint32_t i = 0; i < num_chars; ++i ) min_area += uint32_t(glyphs[i].width * glyphs[i].height);
 
-            if( atlas_x + bm_width > atlas_width ) {
-                atlas_x = 0;
-                atlas_y += max_row_height;
-                max_row_height = 0;
+            for( uint32_t i = 0; i < 4; ++i ) {
+                if( atlas_sizes[i].area < min_area ) continue;
+                
+                atlas_width  = atlas_sizes[i].width;
+                atlas_height = atlas_sizes[i].height;
+                break;
             }
 
-            if( atlas_y + bm_height > atlas_height ) {
-                FT_Done_Face(face);
-                delete[] atlas_pixels;
-                delete[] buffer;
+            if( atlas_width == 0 || atlas_height == 0 ) {
+                for( uint32_t i = 0; i < num_chars; ++i ) FT_Done_Glyph(ft_glyphs[i]);
+                delete[] ft_glyphs;
                 delete[] glyphs;
+
+                FT_Done_Face(ft_face);
+                delete[] buffer;
+
                 return false;
             }
+        }
 
-            
+        Mojo::TextureAtlas tex_atlas = Mojo::TextureAtlas(atlas_width, atlas_height, 32);
+        Mojo::BookshelfTexturePacker tex_packer = Mojo::BookshelfTexturePacker(&tex_atlas);
 
-            Mojo::Font::Glyph& _glyph = glyphs[ch - start_char];
-            _glyph.tex_coords[0] = (float)atlas_x / (float)atlas_width;
-            _glyph.tex_coords[1] = (float)atlas_y / (float)atlas_height;
-            _glyph.tex_coords[2] = (float)(atlas_x + bm_width) / (float)atlas_width;
-            _glyph.tex_coords[3] = (float)(atlas_y + bm_height) / (float)atlas_height;
-            _glyph.width   = bm_width;
-            _glyph.height  = bm_height;
-            _glyph.advance = advance;
-            _glyph.offs_x  = offs_x;
-            _glyph.offs_y  = offs_y;
+        uint8_t* bm_buffer = new uint8_t[bm_max_width * bm_max_height * 4];
+        for( uint32_t i = 0; i < num_chars; ++i ) {
+            const FT_Bitmap bitmap = bm_glyphs[i]->bitmap;
+            if( bitmap.width == 0 || bitmap.rows == 0 ) continue;
 
-            uint8_t* atlas_offs = atlas_pixels + (atlas_x + atlas_y * atlas_width) * 4;
+            memset((void*)bm_buffer, 255, bm_max_width * bm_max_height * 4);
+
             switch( bitmap.pixel_mode ) {
                 default: {
-                    for( uint32_t y = 0; y < bm_height; ++y ) {
-                        for( uint32_t x = 0; x < bm_width; ++x ) {
-                            atlas_offs[x * 4 + 3] = bm_pixels[x];
-                        }
+                    mojo_assertf(0, "Font::CreateFromFile()\n -> Pixel mode not supported.\n"); 
+                } break;
 
+                case FT_PIXEL_MODE_MONO: {
+                    mojo_assertf(0, "Font::CreateFromFile()\n -> TODO: FT_PIXEL_MODE_MONO.\n"); 
+                } break;
+                
+                case FT_PIXEL_MODE_GRAY: {
+                    const uint8_t* bm_pixels = (const uint8_t*)bitmap.buffer;
+
+                    for( uint32_t y = 0; y < bitmap.rows; ++y ) {
+                        for( uint32_t x = 0; x < bitmap.width; ++x ) bm_buffer[(x + y * bitmap.width) * 4 + 3] = bm_pixels[x];
                         bm_pixels += bitmap.pitch;
-                        atlas_offs += atlas_pitch;
                     }
                 } break;
             }
 
-            atlas_x += bm_width;
-        }
+            Mojo::Recti packed_rect;
+            if( !tex_packer.Pack(bitmap.width, bitmap.rows, 1, bm_buffer, packed_rect) ) {
+                mojo_assertf(0, "TODO");
+            }
 
+            glyphs[i].tex_coords[0] = (float)packed_rect.x / atlas_width;
+            glyphs[i].tex_coords[1] = (float)packed_rect.y / atlas_height;
+            glyphs[i].tex_coords[2] = (float)(packed_rect.x + packed_rect.width) / atlas_width;
+            glyphs[i].tex_coords[3] = (float)(packed_rect.y + packed_rect.height) / atlas_height;
+        }
+        delete[] bm_buffer;
+
+        // Unload the glyphs
+        for( uint32_t i = 0; i < num_chars; ++i ) FT_Done_Glyph(ft_glyphs[i]);
+        delete[] ft_glyphs;
+
+        FT_Done_Face(ft_face);
+        delete[] buffer;
+
+        // Update
+        _font_atlas  = tex_atlas.Compile();
         _start_glyph = start_char;
         _num_glyphs  = num_chars;
-        _line_height = max_glyph_height;
         _glyphs      = glyphs;
-        _font_atlas  = MOJO_GET_SERVICE(Graphics)->CreateTexture2D(atlas_width, atlas_height, Mojo::Graphics::TF_RGBA8, (const void*)atlas_pixels, true);
+        _line_height = line_height;
 
-        FT_Done_Face(face);
-        delete[] atlas_pixels;
-        delete[] buffer;
         return true;
     }
 }
