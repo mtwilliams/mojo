@@ -37,6 +37,7 @@ namespace Mojo
             uint32_t _num_glyphs;
             Glyph*   _glyphs;
 
+            float _base_line;
             float _line_height;
     };
 }
