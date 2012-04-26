@@ -138,7 +138,7 @@ namespace Mojo
             for( uint32_t i = 0; i < 4; ++i ) {
                 if( atlas_sizes[i].area < min_area ) continue;
 
-                const uint32_t index = (i + 1) > 4 ? 4 : (i + 1);
+                const uint32_t index = (i + 1) > 3 ? 3 : (i + 1);
                 atlas_width  = atlas_sizes[index].width;
                 atlas_height = atlas_sizes[index].height;
                 break;

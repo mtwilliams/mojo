@@ -17,7 +17,7 @@ namespace States
 
     Default::Default()
     {
-        font.CreateFromFile("data/fonts/verdana_bold.ttf", 12, false);
+        font.CreateFromFile("data/fonts/verdana_bold.ttf", 32, true);
     }
 
     Default::~Default()
@@ -46,6 +46,9 @@ namespace States
 
         static Mojo::TextBatch text_batch = Mojo::TextBatch(256);
         static Mojo::Rectf centered_text_bounds = font.Measure("Centered");
+
+
+        MOJO_GET_SERVICE(Graphics)->SetBlendFunc(Mojo::Graphics::BLEND_SRC_ALPHA, Mojo::Graphics::BLEND_INV_SRC_ALPHA);
 
         text_batch.Begin(font);
         text_batch.Draw("Centered", Mojo::Vector3f((int)((800.0f - centered_text_bounds.width) / 2.0f), (int)((600.0f - centered_text_bounds.height) / 2.0f), 0.5f), Mojo::Color(222, 222, 222));
