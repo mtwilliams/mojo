@@ -1,4 +1,5 @@
 #include <Mojo/Font.hpp>
+#include <Mojo/Debug.hpp>
 #include <Mojo/Services.hpp>
 #include <Mojo/TextureAtlas.hpp>
 #include <Mojo/BookshelfTexturePacker.hpp>
@@ -186,7 +187,7 @@ namespace Mojo
 
             Mojo::Recti packed_rect;
             if( !tex_packer.Pack(bitmap.width, bitmap.rows, 1, bm_buffer, packed_rect) ) {
-                mojo_assertf(0, "TODO");
+                Mojo::DebugPrintf(DBG_WARNING, "Font::CreateFromFile()\n -> unable to pack character '%c'\n", i + start_char);              
             }
 
             glyphs[i].tex_coords[0] = (float)packed_rect.x / atlas_width;

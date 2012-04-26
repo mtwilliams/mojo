@@ -23,7 +23,7 @@ namespace Mojo
     template <typename T> inline void Swap( T& a, T& b ) { T c(a); a = b; b = c; }
 
     template <typename T>
-    inline bool Compare( const T a, const T b ) { return a == b };
+    inline bool Compare( const T a, const T b ) { return a == b; }
 
     template <>
     inline bool Compare<float>( const float a, const float b )   { return fabs(a - b) < FLT_EPSILON; }

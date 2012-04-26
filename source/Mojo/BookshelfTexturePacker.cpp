@@ -26,7 +26,7 @@ namespace Mojo
         } else {
             _shelf_height = _shelf_height < height ? height : _shelf_height;
         }
-
+        
         const uint32_t bytes_per_pixel = (_atlas->_bpp / 8);
         const uint32_t src_pitch   = (width) * bytes_per_pixel;
         const uint32_t atlas_pitch = (_atlas->_width) * bytes_per_pixel;
@@ -45,5 +45,7 @@ namespace Mojo
         packed_rect.height = height;
 
         _x += width + padding;
+
+        return true;
     }
 }
