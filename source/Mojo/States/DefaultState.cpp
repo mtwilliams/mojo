@@ -17,7 +17,7 @@ namespace States
 
     Default::Default()
     {
-        font.CreateFromFile("data/fonts/verdana_bold.ttf", 32, true);
+        font.CreateFromFile("data/fonts/verdana_bold.ttf", 64, true);
     }
 
     Default::~Default()
@@ -45,14 +45,14 @@ namespace States
         graphics->SetMatrix(Mojo::Graphics::MATRIX_PROJECTION, projection_matrix);
 
         static Mojo::TextBatch text_batch = Mojo::TextBatch(256);
-        static Mojo::Rectf centered_text_bounds = font.Measure("Centered");
-
+        static const Mojo::Rectf text_bounds = font.Measure("hello, mojo.");
+        static const Mojo::Vector2f text_pos = Mojo::Vector2f((int)((800.0f - text_bounds.width) / 2.0f), (int)((600.0f - text_bounds.height) / 2.0f));
 
         MOJO_GET_SERVICE(Graphics)->SetBlendFunc(Mojo::Graphics::BLEND_SRC_ALPHA, Mojo::Graphics::BLEND_INV_SRC_ALPHA);
 
         text_batch.Begin(font);
-        text_batch.Draw("Centered", Mojo::Vector3f((int)((800.0f - centered_text_bounds.width) / 2.0f), (int)((600.0f - centered_text_bounds.height) / 2.0f), 0.5f), Mojo::Color(222, 222, 222));
-        text_batch.Draw("Hello, Mojo.\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890\n~!@#$%^&*()-_=+\n[];',./\\{}:\"<>?|\nSource, much.", Mojo::Vector2f(0.0f, 2.0f), Mojo::Color(222, 222, 222));
+        text_batch.Draw("hello, mojo.", text_pos, Mojo::Color(0xFF, 0xFF, 0xFF));
+        //text_batch.Draw("hello, mojo.", text_pos + Mojo::Vector2f(1.0f, 1.0f), Mojo::Colors::Black);
         text_batch.End();
     }
 }

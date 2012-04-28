@@ -38,24 +38,40 @@ namespace Mojo
 
     Mojo::Rectf Font::Measure( const char* string )
     {
-        // bug: the width measurement is slightly off
+        bool fch = true;
+        float x_offset = 0.0f, x_max = 0.0f;
+        float y_offset = 0.0f, y_max = 0.0f;
 
-        char last_ch = '\0';
-        float x_max = 0.0f, y_max = 0.0f;
-        float x_offset = 0.0f, y_offset = 0.0f;
         while( const char ch = *string++ ) {
-            last_ch = ch;
-            x_max = x_max < x_offset ? x_offset : x_max; 
-
             switch( ch ) {
-                case ' ':  x_offset += _glyphs[' ' - _start_glyph].x_advance; break;
-                case '\t': x_offset += _glyphs[' ' - _start_glyph].x_advance * 4; break;
-                case '\n': x_offset = 0.0f; y_offset += GetLineHeight() + 1.0f; break;
+                case ' ': {
+                    x_offset += _glyphs[' ' - _start_glyph].x_advance;
+                } break;
+
+                case '\t': {
+                    x_offset += _glyphs[' ' - _start_glyph].x_advance * 4;
+                } break;
+
+                case '\n': {
+                    x_offset = 0.0f;
+                    y_offset += GetLineHeight() + 1.0f;
+                    fch = true;
+                } break;
+                
                 case '\r': break;
+                
                 default: {
-                    x_offset += _glyphs[ch - _start_glyph].x_advance + _glyphs[ch - _start_glyph].x_bearing;
-                    const float my = y_offset + _base_line - _glyphs[ch - _start_glyph].y_bearing + _glyphs[ch - _start_glyph].height;
-                    y_max = y_max < my ? my : y_max;
+                    const Glyph glyph = _glyphs[ch - _start_glyph];
+
+                    const float mx = x_offset + (fch ? 0.0f : glyph.x_bearing) + glyph.width;
+                    const float my = y_offset - glyph.y_bearing + _base_line + glyph.height;
+
+                    x_max = (x_max < mx) ? mx : x_max;
+                    y_max = (y_max < my) ? my : y_max;
+                    
+                    x_offset += glyph.x_advance - (fch ? glyph.x_bearing : 0.0f);
+
+                    fch = false;
                 } break;
             }
         }
@@ -96,7 +112,7 @@ namespace Mojo
             return false;
         }
 
-        FT_Set_Char_Size(ft_face, font_size * 64, font_size * 64, 96, 96);
+        FT_Set_Char_Size(ft_face, font_size * 64, font_size * 64, 72, 72);
 
         const float line_height = ft_face->size->metrics.height >> 6;
 
@@ -105,6 +121,7 @@ namespace Mojo
         FT_Glyph*       ft_glyphs    = new FT_Glyph[num_chars];
         FT_BitmapGlyph* bm_glyphs    = (FT_BitmapGlyph*)ft_glyphs;
 
+        float blo = 0.0f;
         uint32_t bm_max_width = 0, bm_max_height = 0;
         for( uint32_t i = 0; i < num_chars; ++i ) {
             FT_Load_Char(ft_face, start_char + i, FT_LOAD_DEFAULT);
@@ -123,6 +140,9 @@ namespace Mojo
 
             bm_max_width  = bm_max_width < bitmap.width ? bitmap.width : bm_max_width;
             bm_max_height = bm_max_height < bitmap.rows ? bitmap.rows : bm_max_height;
+
+            const float gbl = -glyphs[i].y_bearing + glyphs[i].height;
+            blo = (blo < gbl) ? gbl : blo;
         }
 
         // Determine the texture atlas size
@@ -133,12 +153,12 @@ namespace Mojo
             };
 
             uint32_t min_area = 0;
-            for( uint32_t i = 0; i < num_chars; ++i ) min_area += uint32_t((glyphs[i].width + 1) * (glyphs[i].height + 1));
+            for( uint32_t i = 0; i < num_chars; ++i ) min_area += uint32_t((glyphs[i].width + 2) * (bm_max_height + 2));
 
             for( uint32_t i = 0; i < 4; ++i ) {
                 if( atlas_sizes[i].area < min_area ) continue;
 
-                const uint32_t index = (i + 1) > 3 ? 3 : (i + 1);
+                const uint32_t index = (i > 3) ? 3 : i;
                 atlas_width  = atlas_sizes[index].width;
                 atlas_height = atlas_sizes[index].height;
                 break;
@@ -173,6 +193,7 @@ namespace Mojo
 
                 case FT_PIXEL_MODE_MONO: {
                     const uint8_t* bm_pixels = (const uint8_t*)bitmap.buffer;
+                    const uint32_t y_offset = 0;
 
                     for( uint32_t y = 0; y < bitmap.rows; ++y ) {
                         for( uint32_t x = 0; x < bitmap.width; ++x ) bm_buffer[(x + y * bitmap.width) * 4 + 3] = ((bm_pixels[x / 8]) & (1 << (7 - (x % 8)))) ? 0xFF : 0x00;
@@ -214,7 +235,7 @@ namespace Mojo
         _start_glyph = start_char;
         _num_glyphs  = num_chars;
         _glyphs      = glyphs;
-        _base_line   = font_size;
+        _base_line   = bm_max_height - blo;
         _line_height = line_height;
 
         return true;

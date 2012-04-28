@@ -55,6 +55,7 @@ namespace Mojo
         const uint32_t max_verts = GetMaxNumVertices();
         if( GetNumVertices() + num_visible_chars * 6 > max_verts ) return;
 
+        bool fch = true;
         float x_offset = 0.0f, y_offset = 0.0f;
 
         const char* titer = text;
@@ -62,15 +63,15 @@ namespace Mojo
             switch( ch ) {
                 case ' ':  x_offset += _font->_glyphs[' ' - _font->_start_glyph].x_advance; break;
                 case '\t': x_offset += _font->_glyphs[' ' - _font->_start_glyph].x_advance * 4; break;
-                case '\n': x_offset = 0.0f; y_offset += _font->GetLineHeight() + 1.0f; break;
+                case '\n': x_offset = 0.0f; y_offset += _font->GetLineHeight() + 1.0f; fch = true; break;
                 case '\r': break;
                 default: {
                     const Mojo::Font::Glyph glyph = _font->_glyphs[ch - _font->_start_glyph];
 
-                    const float min_x = x_offset + _font->_glyphs[ch - _font->_start_glyph].x_bearing;
-                    const float max_x = min_x + _font->_glyphs[ch - _font->_start_glyph].width;
-                    const float min_y = y_offset + _font->_base_line - _font->_glyphs[ch - _font->_start_glyph].y_bearing;
-                    const float max_y = min_y + _font->_glyphs[ch - _font->_start_glyph].height;
+                    const float min_x = x_offset + (fch ? 0.0f : glyph.x_bearing);
+                    const float max_x = min_x + glyph.width;
+                    const float min_y = y_offset - glyph.y_bearing + _font->_base_line;
+                    const float max_y = min_y + glyph.height;
 
                     const Vertex vertices[6] = {
                         { glyph.tex_coords[0], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + min_x, position.y + max_y, position.z },
@@ -82,8 +83,10 @@ namespace Mojo
                         { glyph.tex_coords[0], glyph.tex_coords[3], color.r, color.g, color.b, color.a, position.x + min_x, position.y + max_y, position.z }
                     };
                     
-                    x_offset += _font->_glyphs[ch - _font->_start_glyph].x_advance;
+                    x_offset += glyph.x_advance - (fch ? glyph.x_bearing : 0.0f);
                     Add(6, (const void*)&vertices[0]);
+
+                    fch = false;
                 } break;
             }
         }
