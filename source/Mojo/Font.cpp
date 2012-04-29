@@ -36,7 +36,7 @@ namespace Mojo
         delete[] _glyphs;
     }
 
-    Mojo::Rectf Font::Measure( const char* string )
+    Mojo::Recti Font::Measure( const char* string )
     {
         bool fch = true;
         float x_offset = 0.0f, x_max = 0.0f;
@@ -76,7 +76,7 @@ namespace Mojo
             }
         }
 
-        return Mojo::Rectf(0.0f, 0.0f, x_max, y_max);
+        return Mojo::Recti(0, 0, (int)x_max, (int)y_max);
     }
 
     bool Font::CreateFromFile( const char* path, const uint32_t font_size, const bool smooth, const uint32_t start_char, const size_t num_chars )

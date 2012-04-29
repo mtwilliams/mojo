@@ -26,7 +26,7 @@ namespace Mojo
 
             bool CreateFromFile( const char* path, const uint32_t font_size, const bool smooth = true, const uint32_t start_char = 32, const size_t num_chars = 96 );
 
-            Mojo::Rectf Measure( const char* string );
+            Mojo::Recti Measure( const char* string );
 
         public:
             float GetLineHeight() const { return _line_height; }
