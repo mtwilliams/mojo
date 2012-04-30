@@ -26,15 +26,12 @@ namespace States
 
     void Default::Update( const Mojo::Timestep timestep )
     {
-        //Mojo::DebugPrintf(DBG_WARNING, "Default::Update\n");
     }
 
     void Default::Draw()
     {
-        //Mojo::DebugPrintf(DBG_WARNING, "Default::Draw\n");
-
         static Mojo::Services::Graphics* graphics = MOJO_GET_SERVICE(Graphics);
-        graphics->Clear(Mojo::Graphics::CLEAR_COLOR | Mojo::Graphics::CLEAR_DEPTH, Mojo::Color(23, 23, 23), 1.0f);
+        graphics->Clear(Mojo::Graphics::CLEAR_COLOR | Mojo::Graphics::CLEAR_DEPTH, Mojo::Color(51, 51, 51), 1.0f);
 
         static const Mojo::Matrix4f model_matrix      = Mojo::Matrix4f::identity;
         static const Mojo::Matrix4f view_matrix       = Mojo::Matrix4f::identity;
@@ -44,7 +41,11 @@ namespace States
         graphics->SetMatrix(Mojo::Graphics::MATRIX_VIEW, view_matrix);
         graphics->SetMatrix(Mojo::Graphics::MATRIX_PROJECTION, projection_matrix);
 
-        const char* text = "ABCDCFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n1234567890\n`~!@#$%^&*()-_=+\n[];',./\\{}:\"<>?|";
+        const struct { uint8_t r, g, b, a; float x, y; } bg_quad[6] = {
+            { 0xDE, 0xDE, 0xDE, 0xFF,  },
+        };
+
+        const char* text = "singleplayer\nmultiplayer\nsettings\nquit game";
 
         static Mojo::TextBatch text_batch = Mojo::TextBatch(256);
         static const Mojo::Recti text_bounds = font.Measure(text);
@@ -54,7 +55,7 @@ namespace States
 
         text_batch.Begin(font);
         text_batch.Draw(text, text_pos, Mojo::Color(0xFF, 0xFF, 0xFF));
-        text_batch.Draw(text, text_pos + Mojo::Vector2f(1.0f, 1.0f), Mojo::Colors::Black);
+        //text_batch.Draw(text, text_pos + Mojo::Vector2f(1.0f, 1.0f), Mojo::Colors::Black);
         text_batch.End();
     }
 }
